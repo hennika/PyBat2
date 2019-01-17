@@ -1,6 +1,7 @@
 # Library for all suporting functions to Pybat
 #import numpy as np                # Matrise pakke
 import os
+import sys          # For aborting scripts
 from glob import glob
 from pathlib import Path
 import pandas as pd               # Database pakke
@@ -154,6 +155,16 @@ def open_figure(name,location):
    return pkl.load(open(location.as_posix() + '/' + name + ".pkl", 'rb'))
 
 
+
+
+# Takes string as input and print it as error message, then aborts script.
+def error_message(string):
+
+    print ('\x1b[0;31;0m' + string + '\x1b[0m') # Red color. Colors from https://stackoverflow.com/questions/287871/print-in-terminal-with-colors
+
+    sys.exit(1)             # Will make this function return false value
+
+    return
 
 
 
