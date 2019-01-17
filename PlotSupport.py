@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt   # Plottepakke
 import matplotlib.patches as mpatches # Legend in plot
 import sys                        # For aborting scripts
 import GetLabels                  # For labels to x and y variables
-
+import math                       # For floor
 
 #-----------------------------------------------------------------------------------
 ########       Function for making list of color codes
@@ -128,10 +128,10 @@ def SetPickleSpecs (legend_color_list, **kwargs):
     try:
         cycles = kwargs['cycles1']
     except:
-        last_cycle = df['cycle'].as_matrix().astype(int)[-1]    # Converts cycle column to int, and get last element (last cycle nr).
+        last_cycle = math.floor(df['cycle'].as_matrix().astype(float)[-1])    # Converts cycle column to float, then rounds last element (last cycle) down using floor function to convert to int.
         cycles = range(0, last_cycle, 1)  # Creates list from 0 to last cycle, increment 1
     if cycles == None:                       # In the case that cycles1 = None from user.
-        last_cycle = df['cycle'].as_matrix().astype(int)[-1]  # Converts cycle column to int, and get last element (last cycle nr).
+        last_cycle = math.floor(df['cycle'].as_matrix().astype(float)[-1])    # Converts cycle column to float, then rounds last element (last cycle) down using floor function to convert to int.
         cycles = range(0, last_cycle, 1)  # Creates list from 0 to last cycle, increment 1
     try:
         color_scheme = kwargs['color_scheme1']
