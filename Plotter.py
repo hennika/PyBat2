@@ -1,7 +1,3 @@
-import numpy as np                # Matrise pakke
-import pandas as pd               # Database pakke
-import matplotlib.pyplot as plt   # Plottepakke
-import GetLabels
 import PlotSupport
 
 ########       Script for plotting data
@@ -13,7 +9,7 @@ import PlotSupport
 # - If no more pickles, add labels etc and show plot.
 
 def plotter(**kwargs):
-    x1, y1, xlim, ylim, legend_list, legend_loc, legend_color_list = PlotSupport.SetPlotSpecs(**kwargs) # Sets specifications for plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = PlotSupport.SetPlotSpecs(**kwargs) # Sets specifications for plot
     pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list,**kwargs) # Sets specifications for first pickle
 
     PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)       # Adds this pickle with specifications to plot
@@ -26,21 +22,25 @@ def plotter(**kwargs):
         except:
             continue # Script moves to next iteration, checking for yet another pickle.
 
-    PlotSupport.PlotPlot(x1,y1, xlim, ylim, legend_list, legend_color_list, legend_loc) # Add labels and legend, and shows plot
+    PlotSupport.PlotPlot(x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path) # Add labels and legend, and shows plot
 
     return
 
 
 
 #####    Script for testing function
-# pickle_name_1 = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_t01_02_APC-THF_2_1Vto0_2V_0_01C'
-# pickle_name_2 = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_t03_01_LiBH4_1_7to0_2V_0_01C_CE1'
-#
-# #      Outputs
-# plotter(pickle1=pickle_name_1, pickle2=pickle_name_2, x1='cycle_nr', y1='discharge_spec',legend=['Cell 1', 'Cell 2'])
-# plotter(pickle1=pickle_name_1, pickle2=pickle_name_2, x1='cap_incr_spec', y1='potential', cycles1=[0,1,5,10], color1='blue', color_scheme2='magma',legend=['Cell 1', 'Cell 2'], legend_loc=1)
+pickle_name_1 = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_t01_02_APC-THF_2_1Vto0_2V_0_01C'
+pickle_name_2 = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_t03_01_LiBH4_1_7to0_2V_0_01C_CE1'
+pickle_name_3= '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_multi_KOH_02'
+
+custom = 'plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
+plot1_path = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Graphs\Plot1'
+
+##      Outputs
+#plotter(pickle1=pickle_name_1, pickle2=pickle_name_2, x1='cycle_nr', y1='discharge_spec',legend=['Cell 1', 'Cell 2'])
+plotter(pickle1=pickle_name_1, pickle2=pickle_name_2, xlim=[0,150], ylim=[0.1,2.2], xticks=[0,50,100,150], yticks=[0.2, 1, 1.5, 2.1], xlabel='Capacity (mAh/g active material)',ylabel='Potential vs Mg/Mg$^{2+}$', x1='cap_incr_spec', y1='potential', cycles1=[0,1,5,10], color1='blue', color_scheme2='magma',legend=['Cell 1', 'Cell 2'], legend_loc=1, custom_code=custom, save_path=plot1_path)
+#plotter(pickle1=pickle_name_3, x1='cap_incr_spec', y1='potential', legend=['Cell cycled on Maccor!'], legend_loc=7)
 
 # Todo:
 # - Multiple y-axis (e.g. Coloumbic efficiency or both charge and discharge).
-# - Specify x and y ticks.
-# - Specify x and y labels.
+# - Add fontsize as user input and argument in labels, limits etc

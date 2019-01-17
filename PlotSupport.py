@@ -1,7 +1,7 @@
 import numpy as np                # Matrise pakke
 import pandas as pd               # Database pakke
 import GetLabels                  # For verifying correct x and y input
-#import Error                      # For error handling
+import support                    # For error handling
 import matplotlib.pyplot as plt   # Plottepakke
 import matplotlib.patches as mpatches # Legend in plot
 import sys                        # For aborting scripts
@@ -27,8 +27,8 @@ def GetColors(df, cycles=None, color=None, color_scheme=None):
         return color_list
 
     if (cycles==None):        # If no cycles are defined, will plot all cycles
-            last_cycle = df.astype(float).tail(1)['cycle'].as_matrix().astype(int)      # Reads df column "cycle" as float, returns last element as int.
-            cycles = range(0, last_cycle[0], 1)   # Creates list from 0 to last cycle, increment 1
+        last_cycle = df['cycle'].as_matrix().astype(int)[-1]  # Converts cycle column to int, and get last element (last cycle nr).
+        cycles = range(0, last_cycle, 1)   # Creates list from 0 to last cycle, increment 1
 
     color_min = 100  # Minimum color (if zero, first color is almost white).
     color_max = 300  # Maximum color, 300 looks nice.
@@ -66,12 +66,20 @@ def SetPlotSpecs(**kwargs):
         x1 = kwargs['x1']
         GetLabels.GetLabels(x1)
     except:
-        Error.Message('Not recognizable x variable')
+        support.error_message('Not recognizable x variable (error in SetPlotSpecs - GetLabels)')
     try:
         y1 = kwargs['y1']
         GetLabels.GetLabels(y1)
     except:
-        Error.Message('Not recognizable y variable')
+        support.error_message('Not recognizable y variable (error in SetPlotSpecs - GetLabels)')
+    try:
+        xlabel = kwargs['xlabel']
+    except:
+        xlabel = None
+    try:
+        ylabel = kwargs['ylabel']
+    except:
+        ylabel = None
     try:
         xlim = kwargs['xlim']
     except:
@@ -80,6 +88,14 @@ def SetPlotSpecs(**kwargs):
         ylim = kwargs['ylim']
     except:
         ylim = None
+    try:
+        xticks = kwargs['xticks']
+    except:
+        xticks = None
+    try:
+        yticks = kwargs['yticks']
+    except:
+        yticks = None
     try:
         legend = kwargs['legend']
     except:
@@ -91,7 +107,16 @@ def SetPlotSpecs(**kwargs):
 
     legend_color_list = []      # list of colors for each legend entry.
 
-    return (x1,y1, xlim, ylim, legend, legend_loc, legend_color_list)
+    try:
+        custom_code = kwargs['custom_code']
+    except:
+        custom_code = None
+    try:
+        save_path = kwargs['save_path']
+    except:
+        save_path = None
+
+    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend, legend_loc, legend_color_list, custom_code, save_path)
 
 #-----------------------------------------------------------------------------------
 
@@ -103,11 +128,11 @@ def SetPickleSpecs (legend_color_list, **kwargs):
     try:
         cycles = kwargs['cycles1']
     except:
-        last_cycle = df.astype(float).tail(1)['cycle'].as_matrix().astype(int)
-        cycles = range(0, last_cycle[0], 1)  # Creates list from 0 to last cycle, increment 1
+        last_cycle = df['cycle'].as_matrix().astype(int)[-1]    # Converts cycle column to int, and get last element (last cycle nr).
+        cycles = range(0, last_cycle, 1)  # Creates list from 0 to last cycle, increment 1
     if cycles == None:                       # In the case that cycles1 = None from user.
-        last_cycle = df.astype(float).tail(1)['cycle'].as_matrix().astype(int)
-        cycles = range(0, last_cycle[0], 1)  # Creates list from 0 to last cycle, increment 1
+        last_cycle = df['cycle'].as_matrix().astype(int)[-1]  # Converts cycle column to int, and get last element (last cycle nr).
+        cycles = range(0, last_cycle, 1)  # Creates list from 0 to last cycle, increment 1
     try:
         color_scheme = kwargs['color_scheme1']
     except:
@@ -127,6 +152,44 @@ def SetPickleSpecs (legend_color_list, **kwargs):
     return (pickle_name, df, cycles, color, color_list, legend_color_list)
 
 #-----------------------------------------------------------------------------------
+def AddLimits(xlim, ylim):  # Specifies x and y limits
+    if xlim != None:    # If not specified, will plot default
+        try:
+            plt.xlim(xlim)  # Specifies x limits (min, max) from user
+        except:
+            print ('Not recognisable x limits. \n Format: xlim = [min, max] \n Example: xlim = [0, 50]')
+    if ylim != None:
+        try:
+            plt.ylim(ylim)  # Specifies y limits (min, max) from user
+        except:
+            print ('Not recognisable y limits. \n Format: ylim = [min, max] \n Example: ylim = [0.1, 2.2]')
+    return
+#-----------------------------------------------------------------------------------
+def AddTicks(xticks, yticks):  # Specifies x and y ticks
+    if xticks != None:    # If not specified, will plot default
+        try:
+            plt.xticks(xticks)   # Specifies x ticks from user
+        except:
+            print ('Not recognisable x ticks. \n Format: xticks = [value1,value2,...] \n Example: xticks=[25,50,75,100]')
+    if yticks != None:
+        try:
+            plt.yticks(yticks)   # Specifies y ticks from user
+        except:
+            print ('Not recognisable y ticks. \n Format: yticks = [value1, value2, value3, ...] \n Example: yticks = [0, 0.5, 1, 1.5]')
+    return
+#-----------------------------------------------------------------------------------
+def AddLabels(x1, y1, xlabel, ylabel):  # Add label to plot
+    if xlabel == None:
+        plt.xlabel(GetLabels.GetLabels(x1))  # Adds default label corresponding to variable
+    else:
+        plt.xlabel(xlabel)
+    if ylabel == None:
+        plt.ylabel(GetLabels.GetLabels(y1))  # Adds default label corresponding to variable
+    else:
+        plt.ylabel(ylabel)
+
+    return
+#-----------------------------------------------------------------------------------
 def AddLegend(legend, colorlist, legend_loc=1):       # Legend guide: https://matplotlib.org/users/legend_guide.html
     if legend == None:
         return
@@ -135,7 +198,19 @@ def AddLegend(legend, colorlist, legend_loc=1):       # Legend guide: https://ma
         patches.append(mpatches.Patch(color=colorlist[i], label=legend[i]))  #Sets legend color and text
     plt.legend(handles=patches, loc=legend_loc)     # Add all the specified legends to the plot.
     return
-
+#-----------------------------------------------------------------------------------
+def AddCustom (custom_code):    # Executes string in custom_code as code. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
+    if custom_code!= None:
+        try:
+            exec(custom_code)
+        except:
+            print('Not recognisable custom code. Needs to be one string, where multiple lines are separated by \\n.')
+    return
+#-----------------------------------------------------------------------------------
+def SavePlot(save_path): # Save high resolution by saving displayed plot as .eps and use that in latex, or as png by using save_path variable
+    if save_path!=None:  # Saves plot as png, if save_path variable is used.
+        plt.savefig((save_path+'.png'), format='png', dpi=1000)     # > 300 DPI is recommended by NTNU in master theses.
+    return
 #-----------------------------------------------------------------------------------
 
 
@@ -174,15 +249,15 @@ def SetNextPickle (nr, **kwargs):
     return (kwargs['pickle'+str(nr-1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
 
 #-----------------------------------------------------------------------------------
-def PlotPlot(x1, y1, xlim, ylim, legend_list, legend_color_list, legend_loc):
+def PlotPlot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path):
 
-    plt.xlim(xlim)      # Specifies x limits (min, max)
-    plt.ylim(ylim)      # Specifies y limits (min, max)
-
-    plt.xlabel(GetLabels.GetLabels(x1))  # Gets label corresponding to variable
-    plt.ylabel(GetLabels.GetLabels(y1))  # Gets label corresponding to variable
-
+    AddLimits(xlim, ylim) # Changes x and y limits (min, max), if specified.
+    AddTicks(xticks, yticks) # Changes x and y ticks (min, max), if specified.
+    AddLabels(x1, y1, xlabel, ylabel) # Adds label, either default to variable or specified
     AddLegend(legend_list, legend_color_list, legend_loc) # Adding legend(s) to plot.
+    AddCustom(custom_code) # Executes string in custom_code as code. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
+
+    SavePlot(save_path) # Save high resolution by saving displayed plot as .eps and use that in latex, or as png by using save_path variable
 
     plt.show()
 
