@@ -59,7 +59,7 @@ def importBiologic(data_url):                               #data_url is the loc
     return Data, char_mass
 
 
-# Function for importing data from Lange
+# Function for importing data from Lanhe
 def importLanhe(data_url):
 
     with open(data_url, 'r') as file_input:
@@ -76,7 +76,25 @@ def importLanhe(data_url):
     file_input.close()
     return Data
 
+# Function for importing data from Maccor
+def importMaccor(data_url):
+    with open(data_url,'r') as file_input:
+        Evaluater = False  # Evaluation variable used to determine where the data in the text file is. (We don't want to read all the junk in the beginning of the document).
+        char_mass = None
+        Data = []  # Initiates a list to hold all data
 
+        for line in file_input:  # Reads the data from the data_url line by line.
+            line = line.replace(",", ".")       # Replaces "," with "." so that it is possible to convert the data from a string to a float.
+            if Evaluater == True:  # Evaluates if the line contains data or
+                Data.append(line.split("\t"))   # Appends data from a give line to the Data list
+            elif line.find('SCap')==0:          # Identifies the characteristic mass in the document, as grams(!).
+                char_mass = line.split("\t")[1] # The mass is found (zero element is 'Scap')
+            else:
+                if line.find('Rec')==0 and line.find('Cycle P')==4:     # Attempts to find variables at positions they're supposed to if text file is exported correctly
+                    Data.append(line.split("\t"))   # Appends coloumn names
+                    Evaluater = True                # Sets evaluater to true, will start read in data from next line
+    file_input.close()
+    return Data, char_mass
 
 
 # # #Testing of functions
