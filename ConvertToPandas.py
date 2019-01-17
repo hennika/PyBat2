@@ -37,7 +37,7 @@ def biologic(data_url, CellKey, Database):
     except:
         print('ERROR: Characteristic mass not availible from import document:'+CellKey +". "  'Neither characteristic mass or loading added to database')
 
-    df.to_pickle((Database +"/"+CellKey))                                   #Store data as a Pickle
+    df.to_pickle((Database +"/"+CellKey))  # OBS! Removed .pkl to avoid error. For storing data as a Pickle
 
     return df
 
@@ -46,6 +46,9 @@ def lanhe(data_url, CellKey, Database):
     Data = id.importLanhe(data_url)
 
     df = pd.DataFrame(Data, columns=['cycle_nr', 'charge_spec', 'discharge_spec', 'QE'])  # Creates the dataframe
+
+    # Todo: Add incremental specific capacity?
+    # Todo: Add cell info as for biologic?
 
     df.to_pickle((Database +"/"+CellKey + '.pkl'))  # Store data as a Pickle
 
@@ -74,6 +77,8 @@ def maccor(data_url, CellKey, Database):
 
     df = AddSpecificCapacity.Incremental(df, char_mass)
     df = AddSpecificCapacity.Cyclebased(df, char_mass)
+
+    # Todo: Add cell info as for biologic?
 
     df.to_pickle((Database +"/"+CellKey))                                   #Store data as a Pickle
 
@@ -107,15 +112,12 @@ def AddDischargeAndChargeIncr(df):
 #df = biologic(data_url, CellKey, Database)
 
 # Maccor
-data_url = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Raw_files\B1_combi\B1_combi_multi_KOH_02.txt'
-df = maccor(data_url, CellKey, Database)
+#data_url = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Raw_files\B1_combi\B1_combi_multi_KOH_02.txt'
+#df = maccor(data_url, CellKey, Database)
 
 #df = lanhe(data_url, CellKey)
-#
-#
-#
-#print(df)
 
+#print(df)
 
 #Todo -Consider adding a new class of AddToPandas functions, which adds new columns to the dataframe. This to separat the initial formation of the dataframe and additions.
 
