@@ -83,11 +83,11 @@ exported_data = Path(r'Insert your path to your folder where the exported data w
 # Set which cell from the database that you want to plot here (they are saved as "pickles" :D )
 cell_1 = Path(r'Insert location to cell you want to plot')      # Location to cell 1
 # Ex: cell_1 = Path(r'/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_multi_KOH_02')
-cell_1 = Path(r'/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_multi_KOH_02')
+#cell_1 = Path(r'/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_multi_KOH_02')
 
 cell_2 = Path(r'Insert location to cell you want to plot')      # Location to cell 2
 # Ex: cell_2 = Path(r'/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\TixC-S31_T1_01')
-cell_2 = Path(r'/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\TixC-S31_T1_01')
+#cell_2 = Path(r'/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\TixC-S31_T1_01')
 # You can plot up to 50 cells, that should be enough, shouldn't it?
 
 # Set variables to plot:
@@ -112,7 +112,7 @@ custom = 'plt.text(50,1,\'So science\') \nplt.text(90,1.75,\'Much wow\')'       
 my_new_plot = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Graphs\Plot1'  # Full path and name of plot that will be saved in high resolution (1000 dpi)
 
 # Run this:
-# Plotter.plotter(pickle1=cell_1, pickle2=cell_2,x1=x, y1=y, xlim=xlim, ylim=ylim, xticks=xticks, yticks=yticks, xlabel=xlabel,ylabel=ylabel, cycles1=cycles1, color1=color1, color_scheme2=color_scheme2,legend=legend, legend_loc=legend_loc, custom_code=custom, save_path=my_new_plot)
+# -> Plotter.plotter(pickle1=cell_1, pickle2=cell_2,x1=x, y1=y, xlim=xlim, ylim=ylim, xticks=xticks, yticks=yticks, xlabel=xlabel,ylabel=ylabel, cycles1=cycles1, color1=color1, color_scheme2=color_scheme2,legend=legend, legend_loc=legend_loc, custom_code=custom, save_path=my_new_plot)
 
 
 """
