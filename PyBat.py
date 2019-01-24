@@ -115,6 +115,7 @@ my_new_plot = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Graphs\Plot1' 
 # -> Plotter.plotter(pickle1=cell_1, pickle2=cell_2,x1=x, y1=y, xlim=xlim, ylim=ylim, xticks=xticks, yticks=yticks, xlabel=xlabel,ylabel=ylabel, cycles1=cycles1, color1=color1, color_scheme2=color_scheme2,legend=legend, legend_loc=legend_loc, custom_code=custom, save_path=my_new_plot)
 
 
+
 """
 #########################################################################
 #
