@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt   # Plottepakke
 import StrToFloat
 
 
+
 # Function for importing data from Biologic
 def importBiologic(data_url):                               #data_url is the location of data to be red.
     with open(data_url,'r') as file_input:
@@ -62,19 +63,9 @@ def importBiologic(data_url):                               #data_url is the loc
 # Function for importing data from Lanhe
 def importLanhe(data_url):
 
-    with open(data_url, 'r') as file_input:
-        Data = []  # Initiates a list to hold all data
-        counter = 1
+    df = pd.read_excel(data_url, skiprows=0)  # Reads all rows (first row becomes headers). https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
 
-        for line in file_input:  # Reads the data from the data_url line by line.
-            line = line.replace(",",".")  # Replaces "," with "." so that it is possible to convert the data from a string to a float.
-            line = line.rstrip()
-            if counter > 1:  # Evaluates if the line contains data or
-                Data.append(line.split("\t"))  # Appendas data from a give line to the Data list
-            counter = counter + 1
-
-    file_input.close()
-    return Data
+    return df
 
 # Function for importing data from Maccor
 def importMaccor(data_url):

@@ -1,3 +1,4 @@
+import pandas as pd
 import PlotSupport
 
 ########       Script for plotting data
@@ -29,17 +30,20 @@ def plotter(**kwargs):
 
 
 #####    Script for testing function
-pickle_name_1 = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_t01_02_APC-THF_2_1Vto0_2V_0_01C'
+pickle_name_1 = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_t02_01_APC-THF_2_4Vto0_2V_0_01C'
 pickle_name_2 = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_t03_01_LiBH4_1_7to0_2V_0_01C_CE1'
-pickle_name_3= '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_multi_KOH_02'
+pickle_name_3= '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\TixC_10HF17a_S_T1_02_APC_002C'
 
 custom = 'plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
 plot1_path = '/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Graphs\Plot1'
 
+#df = pd.read_pickle(pickle_name_1)  # Reads pickle
+#print(df['cycle'])
+
 ##      Outputs
-#plotter(pickle1=pickle_name_1, pickle2=pickle_name_2, x1='cycle_nr', y1='discharge_spec',legend=['Cell 1', 'Cell 2'])
-plotter(pickle1=pickle_name_1, pickle2=pickle_name_2, xlim=[0,150], ylim=[0.1,2.2], xticks=[0,50,100,150], yticks=[0.2, 1, 1.5, 2.1], xlabel='Capacity (mAh/g active material)',ylabel='Potential vs Mg/Mg$^{2+}$', x1='cap_incr_spec', y1='potential', cycles1=[0,1,5,10], color1='blue', color_scheme2='magma',legend=['Cell 1', 'Cell 2'], legend_loc=1, custom_code=custom, save_path=plot1_path)
-#plotter(pickle1=pickle_name_3, x1='cap_incr_spec', y1='potential', legend=['Cell cycled on Maccor!'], legend_loc=7)
+#plotter(pickle1=pickle_name_1, pickle2=pickle_name_2, x1='cycle_nr', y1='discharge_spec', legend=['Cell 1', 'Cell 2'])
+#plotter(pickle1=pickle_name_2, pickle2=pickle_name_3, xlim=[0,150], ylim=[0.1,2.2], xticks=[0,50,100,150], yticks=[0.2, 1, 1.5, 2.1], xlabel='Capacity (mAh/g active material)',ylabel='Potential vs Mg/Mg$^{2+}$', x1='cap_incr_spec', y1='potential', cycles1=[0,1,5,10], color1='blue', color_scheme2='magma',legend=['Cell 1', 'Cell 2'], legend_loc=1, custom_code=custom, save_path=plot1_path)
+#plotter(pickle1=pickle_name_3, x1='cap_incr_spec', y1='potential', legend=['Cell cycled on Lanhe!'], legend_loc=7)
 
 # Todo:
 # - Multiple y-axis (e.g. Coloumbic efficiency or both charge and discharge).

@@ -10,6 +10,7 @@ import ImportData as id
 import AddSpecificCapacity
 import FixUnevenLength            # Makes two list same length by removing or adding element
 import sys                        # For exiting script among other
+import support
 
 def biologic(data_url, CellKey, Database):
 
@@ -30,10 +31,11 @@ def biologic(data_url, CellKey, Database):
     df = AddSpecificCapacity.Cyclebased(df, char_mass)
 
     try:
-        cell_info = np.zeros(df.shape[0]) # Creats a list with equal length as the number of rows in the dataframe.
+        cell_info = np.zeros(df.shape[0]) # Creates a list with equal length as the number of rows in the dataframe.
         cell_info[0] = float(char_mass)
         cell_info[1] =(float(char_mass)/2.0106) #Adds characteristic mass and loading to the dataframe cellInfo = [characterisstic mass, loading]
         df['cell_info'] = cell_info    #CellInfo is for some reason returned as a list of list. Fix this later.
+
     except:
         print('ERROR: Characteristic mass not availible from import document:'+CellKey +". "  'Neither characteristic mass or loading added to database')
 
@@ -43,14 +45,34 @@ def biologic(data_url, CellKey, Database):
 
 def lanhe(data_url, CellKey, Database):
 
-    Data = id.importLanhe(data_url)
+    df = id.importLanhe(data_url)   # Imports excel file as dataframe.
 
-    df = pd.DataFrame(Data, columns=['cycle_nr', 'charge_spec', 'discharge_spec', 'QE'])  # Creates the dataframe
+    del df['Index'],df['Energy/mWh'], df['SEnergy/Wh/kg'],df['SysTime'], df['Unnamed: 10'] # Deletes row that we do not want/need.
+    df = df.rename(columns={'TestTime/Sec.':'time', 'StepTime/Sec.':'step_time','Voltage/V':'potential','Current/mA':'current','Capacity/mAh':'cap_incr', 'SCapacity/mAh/g':'cap_incr_spec', 'State': 'mode'})
 
-    # Todo: Add incremental specific capacity?
+    # Tries to calculate characteristic mass and verifies with user / input from user:
+    try:
+        last_cap_incr = df['cap_incr'].iloc[-1]
+        last_cap_incr_spec = df['cap_incr_spec'].iloc[-1]
+        char_mass = last_cap_incr/last_cap_incr_spec*1000
+        support.print_cool('blue', 'Found this characteristic mass (mg): ', char_mass)
+        char_mass = support.input_cool('yellow', 'Please write desired mass (mg):   ')
+    except:
+        char_mass = support.input_cool('yellow', 'No characteristic mass found. Please input mass:   ')
+
+    #Add additional variables to pandas
+    # First, need discharge_incr and charge_incr (have cap_incr) to use AddSpecificCapacity functions:
+    df = AddDischargeAndChargeIncr(df)
+    # Then, can add specific incremental capacity: (not really necessary, is in fact exported from Lanhe)
+    df = AddSpecificCapacity.Incremental(df, char_mass)
+
+    # Need 'cycle' variable for cyclebased! Hopefully it can be exported from Lanhe.
+    #df = AddSpecificCapacity.Cyclebased(df, char_mass)
+
+    # Todo: Add cycle specific capacity
     # Todo: Add cell info as for biologic?
 
-    df.to_pickle((Database +"/"+CellKey + '.pkl'))  # Store data as a Pickle
+    df.to_pickle((Database +"/"+CellKey))  # Store data as a Pickle
 
     return df
 
@@ -88,24 +110,26 @@ def AddDischargeAndChargeIncr(df):
     discharge_incr = []         # Initiate variables
     charge_incr = []            # Initiate variables
 
-    for i in range(0, len(df['cycle'])):    # Read dataframe line for line
+    for i in range(0, len(df.index)):    # Read dataframe line for line
+        if df['mode'][i] == 'D' or 'D_Rate':  # If mode is 'D' (Maccor) or 'D_Rate' (Lanhe), add capacity variable to discharge variable, and add zero to charge variable. Vice versa.
+            discharge_incr.append(df['cap_incr'][i])
+            charge_incr.append(0)
+            continue                # Necesarry with continue to prevent extra 0 (it seems 'R' becomes true for 'C_Rate' or 'D_Rate')
+        if df['mode'][i] == 'C' or 'C_Rate':  # If mode is 'C' (Maccor) or 'C_Rate' (Lanhe), add capacity variable to charge variable, and add zero to discharge variable.
+            charge_incr.append(df['cap_incr'][i])
+            discharge_incr.append(0)
+            continue
         if df['mode'][i] == 'R':    # If mode is 'R', add zero to discharge and charge variables
             discharge_incr.append(0)
             charge_incr.append(0)
-        if df['mode'][i] == 'D':    # If mode is 'D', add capacity variable to discharge variable, and add zero to charge variable. Vice versa.
-            discharge_incr.append(df['cap_incr'][i])
-            charge_incr.append(0)
-        if df['mode'][i] == 'C':  # If mode is 'C', add capacity variable to charge variable, and add zero to discharge variable.
-            charge_incr.append(df['cap_incr'][i])
-            discharge_incr.append(0)
 
     df['discharge_incr'], df['charge_incr'] = [discharge_incr, charge_incr] # Add them as new columns to dataframe.
 
     return df
 
 #Script for testing functions.
-#CellKey = 'B1_combi_multi_KOH_02'
-#Database = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles'
+CellKey = 'TixC_10HF17a_S_T1_02_APC_002C'
+Database = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles'
 
 # Biologic
 #data_url = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Raw_files\B1_combi\B1_combi_t02_01_APC-THF_2_4Vto0_2V_0_01C_CE3.mpt'
@@ -115,7 +139,9 @@ def AddDischargeAndChargeIncr(df):
 #data_url = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Raw_files\B1_combi\B1_combi_multi_KOH_02.txt'
 #df = maccor(data_url, CellKey, Database)
 
-#df = lanhe(data_url, CellKey)
+# Lanhe
+#data_url = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Raw_files\TixC\_10HF17a\S\TixC_10HF17a_S_T1_02_APC_002C_008_4.xls'
+#df = lanhe(data_url, CellKey, Database)
 
 #print(df)
 
