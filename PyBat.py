@@ -50,7 +50,7 @@ plots = MyPaths.plots                     # Location to where plots are saved
 # 1) Search for cell you want to import:
 search_word = 'TixC_10HF17a_S_T1_02_APC'
 # 2) Run code below and answer the pop-up questions:
-Automate.auto_import(search_word)
+# -> Automate.auto_import(search_word)
 
 #------------------------------------------------------------------------
 # Manual importing each file: (change to your folders and remove "->")
@@ -80,6 +80,19 @@ Automate.auto_import(search_word)
 #
 #########################################################################
 """
+#------------------------------------------------------------------------
+# Auto plotting (remove #-> to run code)
+#------------------------------------------------------------------------
+# 1) Search for cell(s) you want to plot:
+search_word = 'B1_combi'
+x = 'cap_incr_spec'
+y = 'potential'
+
+# -> Automate.auto_plot(x, y, search_word)
+
+#------------------------------------------------------------------------
+# Manual plotting (remove #-> to run code)
+#------------------------------------------------------------------------
 # Set which cell from the database that you want to plot here (they are saved as "pickles" :D )
 cell_1 = Path(r'Insert location to cell you want to plot')      # Location to cell 1
 cell_1 = Path(r'/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles\B1_combi_multi_KOH_02')

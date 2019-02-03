@@ -9,10 +9,31 @@ import matplotlib.pyplot as plt   # Plottepakke
 import pickle as pkl
 
 def search_file(search_word, location):                                                                    #Function for searching in a file system for a given file name.
+    # Location: The folder from which all subfolders are searched in.
+    #Search_word: The word that will be search for in the subfolders of "location"
+
+    all_files = find_files(search_word, location)   # Finds and returns files as list
+
+    print('\033[94m')   # Starts printing in blue until '\x1b[0m' stops it (at definition end)
+    for line in all_files:
+        print(line)
+    print('\x1b[0m')  # Stops color printing
+
+    return all_files
+
+def print_files_nr (files): # Prints files with nr first (starting at 0)
+    counter = 0
+    print('\033[94m')   # Starts printing in blue until '\x1b[0m' stops it (at definition end)
+    for line in files:
+        print(counter, ':  ', line)
+        counter = counter + 1
+    print('\x1b[0m')  # Stops color printing
+
+    return
+
+def find_files(search_word, location):
     #Location: The folder from which all subfolders are searched in.
     #Search_word: The word that will be search for in the subfolders of "location"
-    print('\033[94m')   # Starts printing in blue until '\x1b[0m' stops it (at definition end)
-
     all_files = []
 
     if search_word.lower() == 'all':
@@ -25,13 +46,7 @@ def search_file(search_word, location):                                         
         for file in location.rglob('**/' + search_word + '*'):
             all_files.append(file)          #Vector with the path of all files with corresponds with the search word.
 
-    for line in all_files:
-        print(line)
-
-    print('\x1b[0m')  # Stops color printing
-
     return all_files
-
 
 def save_figure(fig_handle, location):
 

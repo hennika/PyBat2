@@ -117,3 +117,38 @@ def merge_biologic(search_word, location):     #function takes a vector of dataf
         print("\n Input invalid")
 
     return print("\n No merge conducted")
+
+def auto_plot (x, y, search_word):
+    import PlotSupport
+    database = MyPaths.database
+    files = support.find_files(search_word, database)  # Finds and returns files as list
+    support.print_files_nr(files)  # prints files with nr
+
+    response = support.input_cool('yellow', 'Which of these cells do you want to plot? Write corresponding numbers, separated with "+" (Ex: 0+2+3):  ')
+    c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
+
+    cell_names = []     # Initiates list for cells that will be plotted
+    for i in range (0, len(c_response)):  # Loop through all cells to plot.
+        cell_names.append((files[int(c_response[i])]).stem)  # Saves the cell name (.stem returns last path-element)
+
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = PlotSupport.SetPlotSpecs(x1=x, y1=y, legend=cell_names)  # Sets specifications for plot
+    pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=str(files[int(c_response[0])]),x1=x1, y1=y1)  # Sets specifications for first pickle
+    PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)       # Adds this pickle with specifications to plot
+    
+    for nr in range (2, len(c_response)+1):
+  #      try:
+        next_pickle_response = str(files[int(c_response[nr-1])])   # Looks up index in files given by the next cell in the response
+        next_pickle_response_nr = 'pickle' + str(nr)
+        next_pickle_name, next_cycles, next_color, next_color_scheme = PlotSupport.SetNextPickle(2,pickle2=next_pickle_response, color_scheme2=PlotSupport.DefaultColorGradients(nr), x1=x1, y1=y1)
+        pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(
+            legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=y1, color1=next_color,
+            color_scheme1=next_color_scheme)
+        PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)
+#        except:
+ #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
+
+    PlotSupport.PlotPlot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list,
+                             legend_loc, custom_code, save_path)  # Add labels and legend, and shows plot
+
+    return
+
