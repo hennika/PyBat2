@@ -49,9 +49,15 @@ def Cyclebased(df, char_mass):
                 charge_spec.append(charge_incr_float[-1] / float(char_mass) * 1000)
             continue  # Iteration is finished, and should not go to if condition below.
         if discharge_incr_float[i] != 0 and discharge_incr_float[i + 1] == 0:  # Finds where the discharge ends.
-            discharge_spec.append(discharge_incr_float[i] / float(char_mass) * 1000)  # Adding specific discharge/gram
+            if discharge_incr_float[i] < discharge_incr_float[i-1]:     # Sometimes last value before changing to (dis)charge is transitioning to 0, use second last value instead.
+                discharge_spec.append(discharge_incr_float[i-1] / float(char_mass) * 1000)  # Adding specific discharge/gram
+            else:
+                discharge_spec.append(discharge_incr_float[i] / float(char_mass) * 1000)  # Adding specific discharge/gram
         if charge_incr_float[i] != 0 and charge_incr_float[i + 1] == 0:  # Finds where the charge ends.
-            charge_spec.append(charge_incr_float[i] / float(char_mass) * 1000)  # Adding specific charge/gram
+            if charge_incr_float[i] < charge_incr_float[i-1]:  # Sometimes last value before changing to (dis)charge is transitioning to 0, use second last value instead.
+                charge_spec.append(charge_incr_float[i-1] / float(char_mass) * 1000)  # Adding specific charge/gram
+            else:
+                charge_spec.append(charge_incr_float[i] / float(char_mass) * 1000)  # Adding specific charge/gram
 
     discharge_spec, charge_spec, cycles = FixUnevenLength.RemoveLast(discharge_spec, charge_spec, cycles,
                                                                      target=min(len(discharge_spec), len(charge_spec),
