@@ -61,13 +61,11 @@ def lanhe(data_url, CellKey, Database):
         char_mass = support.input_cool('yellow', 'No characteristic mass found. Please input mass:   ')
 
     #Add additional variables to pandas
-    # First, need discharge_incr and charge_incr (have cap_incr) to use AddSpecificCapacity functions:
-    df = AddDischargeAndChargeIncr(df)
-    # Then, can add specific incremental capacity: (not really necessary, is in fact exported from Lanhe)
+    # First, need incremental cycle, discharge_incr and charge_incr (have cap_incr) to use AddSpecificCapacity functions:
+    df = addFromCurrents(df)
+    # Then, can add specific incremental capacity (not really necessary, is in fact exported from Lanhe) and cyclebased:
     df = AddSpecificCapacity.Incremental(df, char_mass)
-
-    # Need 'cycle' variable for cyclebased! Hopefully it can be exported from Lanhe.
-    #df = AddSpecificCapacity.Cyclebased(df, char_mass)
+    df = AddSpecificCapacity.Cyclebased(df, char_mass)
 
     # Todo: Add cycle specific capacity
     # Todo: Add cell info as for biologic?
@@ -111,11 +109,11 @@ def AddDischargeAndChargeIncr(df):
     charge_incr = []            # Initiate variables
 
     for i in range(0, len(df.index)):    # Read dataframe line for line
-        if df['mode'][i] == 'D' or 'D_Rate':  # If mode is 'D' (Maccor) or 'D_Rate' (Lanhe), add capacity variable to discharge variable, and add zero to charge variable. Vice versa.
+        if df['mode'][i] == 'D' or df['mode'][i]=='D_Rate':  # If mode is 'D' (Maccor) or 'D_Rate' (Lanhe), add capacity variable to discharge variable, and add zero to charge variable. Vice versa.
             discharge_incr.append(df['cap_incr'][i])
             charge_incr.append(0)
             continue                # Necesarry with continue to prevent extra 0 (it seems 'R' becomes true for 'C_Rate' or 'D_Rate')
-        if df['mode'][i] == 'C' or 'C_Rate':  # If mode is 'C' (Maccor) or 'C_Rate' (Lanhe), add capacity variable to charge variable, and add zero to discharge variable.
+        if df['mode'][i] == 'C' or df['mode'][i]=='C_Rate':  # If mode is 'C' (Maccor) or 'C_Rate' (Lanhe), add capacity variable to charge variable, and add zero to discharge variable.
             charge_incr.append(df['cap_incr'][i])
             discharge_incr.append(0)
             continue
@@ -126,6 +124,76 @@ def AddDischargeAndChargeIncr(df):
     df['discharge_incr'], df['charge_incr'] = [discharge_incr, charge_incr] # Add them as new columns to dataframe.
 
     return df
+
+def AddCycleIncr(df):    # Was used on Lanhe-files, but replaced with addFromCurrents function.
+    discharge_incr_float = StrToFloat.strToFloat(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
+    charge_incr_float = StrToFloat.strToFloat(df['charge_incr'].tolist())  # Extracting incremental charge as float
+    #current_float = StrToFloat.strToFloat(df['current'].tolist())  # Extracting incremental charge as float
+    cycle = []      # Initiates cycle variable (incremental cycle)
+    cycle_nr = 0    # Cycle counter that will be written to cycle variable
+    dis_char_cycle = False      # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    char_dis_cycle = False      # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    started = False             # Used to define if cycling has started
+
+    for i in range(0, len(discharge_incr_float)):
+
+        if discharge_incr_float[i]!=0 and discharge_incr_float[i-1] ==0 and started==False:    # New discharge and starting with discharge
+            dis_char_cycle = True
+            started = True
+        if charge_incr_float[i] != 0 and charge_incr_float[i - 1] == 0 and started == False:   # New charge and starting with charge
+            char_dis_cycle = True
+            started = True
+        if discharge_incr_float[i] != 0 and discharge_incr_float[i - 1] == 0 and dis_char_cycle == True:  # New discharge, which (might) define new cycle.
+            cycle_nr = cycle_nr + 1     # New cycle
+        if charge_incr_float[i] != 0 and charge_incr_float[i - 1] == 0 and char_dis_cycle == True:  # New charge, which (might) define new cycle.
+            cycle_nr = cycle_nr + 1     # New cycle
+
+        cycle.append(cycle_nr)
+
+    df['cycle'] = cycle # Add cycle variable as new column in dataframe.
+
+    return df
+
+def addFromCurrents(df):    # Adds incremental cycle, charge and discharge from current signs.
+    cycle = []           # Initiate variable
+    cycle_nr = 0         # Cycle counter that will be written to cycle variable
+    discharge_incr = []  # Initiate variable
+    charge_incr = []     # Initiate variable
+    dis_char_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    char_dis_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    started = False      # Used to define if cycling has started
+
+    for i in range(0, len(df['current'])):    # Read dataframe line for line
+        #---------------------------------
+        #  Cycle variable:
+        if df['current'][i] < 0 and df['current'][i-1] > 0 and started == False:  # New discharge, and current is turned on for first time
+            started = True
+            dis_char_cycle = True
+        if df['current'][i] > 0 and df['current'][i-1] < 0 and started == False:  # New charge, and current is turned on for first time
+            started = True
+            char_dis_cycle = True
+        if df['current'][i] < 0 and df['current'][i - 1] > 0 and started == True:  # New discharge, and new cycle
+            cycle_nr = cycle_nr + 1
+        if df['current'][i] > 0 and df['current'][i - 1] < 0 and started == True:  # New charge, and new cycle
+            cycle_nr = cycle_nr + 1
+        cycle.append(cycle_nr)
+        # ---------------------------------
+        # Discharge and charge variables:
+        if df['current'][i]==0:     # If current is zero, capacity will be zero
+            discharge_incr.append(0)
+            charge_incr.append(0)
+        if df['current'][i] < 0:  # Negative current means discharge
+            discharge_incr.append(df['cap_incr'][i])
+            charge_incr.append(0)
+        if df['current'][i] > 0:
+            discharge_incr.append(0)
+            charge_incr.append(df['cap_incr'][i])
+        # ---------------------------------
+
+    df['cycle'], df['discharge_incr'], df['charge_incr'] = [cycle, discharge_incr, charge_incr] # Add them as new columns to dataframe.
+
+    return df
+
 
 #Script for testing functions.
 CellKey = 'TixC_10HF17a_S_T1_02_APC_002C'
