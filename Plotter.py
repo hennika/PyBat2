@@ -17,9 +17,9 @@ def plotter(**kwargs):
 
     for nr in range (2, 50):        # Does the same for rest of the wanted pickles (here up to 50).
         try:                        # Attempts to read next pickle. If found, will set specifications and add pickle to plot as above.
-            next_pickle_name, next_cycles, next_color, next_color_scheme = PlotSupport.SetNextPickle(nr, **kwargs)
-            pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=y1, color1=next_color, color_scheme1=next_color_scheme)
-            PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)
+            next_pickle_name, next_y, next_cycles, next_color, next_color_scheme = PlotSupport.SetNextPickle(nr, **kwargs)
+            pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=next_y, color1=next_color, color_scheme1=next_color_scheme)
+            PlotSupport.AddPickleToPlot(df, cycles, x1, next_y, color_list)
         except:
             continue # Script moves to next iteration, checking for yet another pickle.
 

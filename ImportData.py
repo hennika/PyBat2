@@ -6,6 +6,7 @@ import numpy as np                # Matrise pakke
 import pandas as pd               # Database pakke
 import matplotlib.pyplot as plt   # Plottepakke
 import StrToFloat
+import support
 
 
 
@@ -20,7 +21,6 @@ def importBiologic(data_url):                               #data_url is the loc
 
             line = line.replace(",",".")  # Replaces "," with "." so that it is possible to convert the data from a string to a float.
             line = line.rstrip()                            # Removes all kind of trailing characters. Eks: Whitespace and \n at the end of a line
-
 
             if Evaluater == True:                           # Evaluates if the line contains data or
 
@@ -38,8 +38,6 @@ def importBiologic(data_url):                               #data_url is the loc
                     else:
                         Data.append(line.split("\t"))  # Appendas data from a give line to the Data list
 
-
-
             elif line.find('Characteristic mass') == 0:     # Identifies the characteristic mass in the documet.
                 if char_mass:
                     char_mass.append(float(line.split(' ')[3]))
@@ -49,14 +47,10 @@ def importBiologic(data_url):                               #data_url is the loc
                     Data.append(line.split("\t"))
                     Evaluater = True
 
-    if len(char_mass) >= 1:             # If more then 1 characteristic mass is found, the user is proped to decide which to use.
-        print("\nMultiple characteristic masses found:  ", char_mass)
-        char_mass = input("\nPleas write the characteristic mass that whould be used for calaculating spesific capacity:    ")
-
-    if not char_mass:
-        char_mass = input("\n No characteristic mass found. Please input mass:  ")
+    char_mass = check_char_mass(char_mass)
 
     file_input.close()
+
     return Data, char_mass
 
 
@@ -84,8 +78,28 @@ def importMaccor(data_url):
                 if line.find('Rec')==0 and line.find('Cycle P')==4:     # Attempts to find variables at positions they're supposed to if text file is exported correctly
                     Data.append(line.split("\t"))   # Appends coloumn names
                     Evaluater = True                # Sets evaluater to true, will start read in data from next line
+
+    char_mass = check_char_mass(char_mass)      # Verifies found char_mass with user.
+
     file_input.close()
     return Data, char_mass
+
+def check_char_mass (found_mass):
+    use_mass = None # value to be returned
+    if found_mass!=None:
+        support.print_cool('blue', 'Found this/these characteristic mass (mg): ', found_mass)
+        response = support.input_cool('yellow', '\nUse this? (enter/no):   \n(If multiple masses, will use first)   ')
+        if response == 'no':
+            use_mass = support.input_cool('yellow', 'Please write desired mass (mg):   ')
+        elif type(found_mass)==list:
+            use_mass = found_mass[0]
+        else:
+            use_mass = found_mass
+
+    else:
+        use_mass = support.input_cool('yellow', 'No characteristic mass found. Please write desired mass (mg):   ')
+
+    return use_mass
 
 
 # # #Testing of functions
@@ -94,77 +108,5 @@ def importMaccor(data_url):
 #Data = importBiologic(data_url)
 #print(Data[0][0])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ## Storing data in Pandas
-    #col = Data[0][0:(len(Data[0])-1)]
-    #
-    # SiO2M_3 = pd.DataFrame(Data[1:],columns=col)
-    # SiO2M_3.to_pickle('SiO2M_3_ECDEC.pkl')
-    #
-    # A  = SiO2M_3['Q charge/mA.h'].tolist()
-    # print(A)
-    #
-    # x = strToFloat.strToFloat(SiO2M_3['time/s'].tolist())
-    # y = strToFloat.strToFloat(SiO2M_3['Ecell/V'].tolist())
-    #
-    # print(type(x[1]))
-
-
-
-
-
-
-
-    # Reading data from list of list (Will probably not be used)
-
-
-
-    # #Initierer tom liste
-    # x = []      # Time
-    # y = []      # Potential
-    #
-    #
-    # # Henter ut "time and potential" data fra txt fil.
-    # for numb in range(2,len(Data)):
-    #     x.append(float(Data[numb][7]))
-    #     y.append(float(Data[numb][11]))
-
-
-
-
-
-
-
-
-    #Plotter data som X og Y
-    # plt.plot(x, y)
-    # plt.xlabel('time [s]')
-    # plt.ylabel('voltage [V]')
-    # plt.title('About as simple as it gets, folks')
-    # plt.grid(False)
-    # plt.locator_params(axis='both', nbins=6)
-    # plt.ylim(ymax=2.4)
-    # plt.show()
-    #
-
-
-
-
-
-#Lukker filer for å spare minne.
 
 

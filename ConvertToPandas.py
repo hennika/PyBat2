@@ -43,6 +43,31 @@ def biologic(data_url, CellKey, Database):
 
     return df
 
+def vmp3 (data_url, CellKey, Database):
+    Data, char_mass = id.importBiologic(data_url)     # use ID:importBiologic to import data and the characteristic mass from a biologic txt file.
+    column_names = Data[0][0:(len(Data[0]))]           # Extracts the name of the colums from the txt file to place them in the dataframe
+    df = pd.DataFrame(Data[1:], columns=column_names)  # Creates the dataframe
+    # Fixing columns. Column names from CV-file:  ['mode', 'ox/red', 'error', 'control changes', 'counter inc.', 'time/s', 'control/V', 'Ewe/V', '<I>/mA', 'cycle number', '(Q-Qo)/C', '<Ece>/V', 'P/W', 'Ewe-Ece/V']
+    del df['mode'], df['control changes'], df['counter inc.'], df['control/V']  # Deletes row that we do not want.
+    df = df.rename(columns={'ox/red':'redox', 'time/s':'time','Ewe/V':'Ew','<I>/mA':'current', 'cycle number':'cycle', '(Q-Qo)/C':'(Q-Qo)/C', 'Ece/V': 'Ec', 'P/W': 'power', 'Ewe-Ece/V':'Ew-Ec'}) # Renaming.
+    try:     # Seems like exported file can either contain <> or not
+        df.rename(columns={'<Ece>/V': 'Ec'})
+    except:
+        print()
+    try:        # If galvanostatic cycling from vmp3, will have additional columns and want to add specific capacity etc:
+        # Fixing columns part 2. Column names from galvanostatic cycling are combination of regular biologic file and CV: ['mode', 'ox/red', 'error', 'control changes', 'Ns changes', 'counter inc.', 'Ns', 'time/s', 'dq/mA.h', '(Q-Qo)/mA.h', 'control/V/mA', 'Ewe/V', 'Q charge/discharge/mA.h', 'half cycle', 'Ece/V', 'Energy charge/W.h', 'Energy discharge/W.h', 'Capacitance charge/µF', 'Capacitance discharge/µF', '<I>/mA', 'x', 'Q discharge/mA.h', 'Q charge/mA.h', 'Capacity/mA.h', 'Efficiency/%', 'control/V', 'control/mA', 'cycle number', 'P/W', 'Ewe-Ece/V']
+        # Should delete some, rename similar as regular biologic file and rename vmp3-specific columns (latter already done above).
+        del df['Ns changes'], df['Ns'], df['(Q-Qo)/mA.h'], df['control/V/mA'], df['Q charge/discharge/mA.h'], df['x']  # Deletes row that we do not want.
+        df = df.rename(columns={'ox/red':'redox','dq/mA.h':'dq','half cycle':'halfcycle','Energy charge/W.h':'energy_char','Energy discharge/W.h':'energy_dis','Capacitance charge/µF':'capacitance_char','Capacitance discharge/µF':'capacitance_dis', 'Q discharge/mA.h':'discharge_incr', 'Q charge/mA.h':'charge_incr','Capacity/mA.h' : 'cap_incr', 'Efficiency/%': 'QE', 'control/mA' : 'current_aim' ,'cycle number':'cycle'})
+        df = AddSpecificCapacity.Incremental(df, char_mass)
+        df = AddSpecificCapacity.Cyclebased(df, char_mass)
+    except:
+        print('Imported as \"CV\"-file, specific capacity not added.')
+
+    df.to_pickle((Database +"/"+CellKey))  # Storing data as a Pickle
+
+    return df
+
 def lanhe(data_url, CellKey, Database):
 
     df = id.importLanhe(data_url)   # Imports excel file as dataframe.
@@ -55,8 +80,9 @@ def lanhe(data_url, CellKey, Database):
         last_cap_incr = df['cap_incr'].iloc[-1]
         last_cap_incr_spec = df['cap_incr_spec'].iloc[-1]
         char_mass = last_cap_incr/last_cap_incr_spec*1000
-        support.print_cool('blue', 'Found this characteristic mass (mg): ', char_mass)
-        char_mass = support.input_cool('yellow', 'Please write desired mass (mg):   ')
+        id.check_char_mass(char_mass)
+        #support.print_cool('blue', 'Found this characteristic mass (mg): ', char_mass)
+        #char_mass = support.input_cool('yellow', 'Please write desired mass (mg):   ')
     except:
         char_mass = support.input_cool('yellow', 'No characteristic mass found. Please input mass:   ')
 
