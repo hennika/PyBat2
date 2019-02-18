@@ -43,6 +43,31 @@ def biologic(data_url, CellKey, Database):
 
     return df
 
+def vmp3 (data_url, CellKey, Database):
+    Data, char_mass = id.importBiologic(data_url)     # use ID:importBiologic to import data and the characteristic mass from a biologic txt file.
+    column_names = Data[0][0:(len(Data[0]))]           # Extracts the name of the colums from the txt file to place them in the dataframe
+    df = pd.DataFrame(Data[1:], columns=column_names)  # Creates the dataframe
+    # Fixing columns. Column names from CV-file:  ['mode', 'ox/red', 'error', 'control changes', 'counter inc.', 'time/s', 'control/V', 'Ewe/V', '<I>/mA', 'cycle number', '(Q-Qo)/C', '<Ece>/V', 'P/W', 'Ewe-Ece/V']
+    del df['mode'], df['control changes'], df['counter inc.'], df['control/V']  # Deletes row that we do not want.
+    df = df.rename(columns={'ox/red':'redox', 'time/s':'time','Ewe/V':'Ew','<I>/mA':'current', 'cycle number':'cycle', '(Q-Qo)/C':'(Q-Qo)/C', 'Ece/V': 'Ec', 'P/W': 'power', 'Ewe-Ece/V':'Ew-Ec'}) # Renaming.
+    try:     # Seems like exported file can either contain <> or not
+        df.rename(columns={'<Ece>/V': 'Ec'})
+    except:
+        print()
+    try:        # If galvanostatic cycling from vmp3, will have additional columns and want to add specific capacity etc:
+        # Fixing columns part 2. Column names from galvanostatic cycling are combination of regular biologic file and CV: ['mode', 'ox/red', 'error', 'control changes', 'Ns changes', 'counter inc.', 'Ns', 'time/s', 'dq/mA.h', '(Q-Qo)/mA.h', 'control/V/mA', 'Ewe/V', 'Q charge/discharge/mA.h', 'half cycle', 'Ece/V', 'Energy charge/W.h', 'Energy discharge/W.h', 'Capacitance charge/µF', 'Capacitance discharge/µF', '<I>/mA', 'x', 'Q discharge/mA.h', 'Q charge/mA.h', 'Capacity/mA.h', 'Efficiency/%', 'control/V', 'control/mA', 'cycle number', 'P/W', 'Ewe-Ece/V']
+        # Should delete some, rename similar as regular biologic file and rename vmp3-specific columns (latter already done above).
+        del df['Ns changes'], df['Ns'], df['(Q-Qo)/mA.h'], df['control/V/mA'], df['Q charge/discharge/mA.h'], df['x']  # Deletes row that we do not want.
+        df = df.rename(columns={'ox/red':'redox','dq/mA.h':'dq','half cycle':'halfcycle','Energy charge/W.h':'energy_char','Energy discharge/W.h':'energy_dis','Capacitance charge/µF':'capacitance_char','Capacitance discharge/µF':'capacitance_dis', 'Q discharge/mA.h':'discharge_incr', 'Q charge/mA.h':'charge_incr','Capacity/mA.h' : 'cap_incr', 'Efficiency/%': 'QE', 'control/mA' : 'current_aim' ,'cycle number':'cycle'})
+        df = AddSpecificCapacity.Incremental(df, char_mass)
+        df = AddSpecificCapacity.Cyclebased(df, char_mass)
+    except:
+        print('Imported as \"CV\"-file, specific capacity not added.')
+
+    df.to_pickle((Database +"/"+CellKey))  # Storing data as a Pickle
+
+    return df
+
 def lanhe(data_url, CellKey, Database):
 
     df = id.importLanhe(data_url)   # Imports excel file as dataframe.
@@ -55,19 +80,18 @@ def lanhe(data_url, CellKey, Database):
         last_cap_incr = df['cap_incr'].iloc[-1]
         last_cap_incr_spec = df['cap_incr_spec'].iloc[-1]
         char_mass = last_cap_incr/last_cap_incr_spec*1000
-        support.print_cool('blue', 'Found this characteristic mass (mg): ', char_mass)
-        char_mass = support.input_cool('yellow', 'Please write desired mass (mg):   ')
+        id.check_char_mass(char_mass)
+        #support.print_cool('blue', 'Found this characteristic mass (mg): ', char_mass)
+        #char_mass = support.input_cool('yellow', 'Please write desired mass (mg):   ')
     except:
         char_mass = support.input_cool('yellow', 'No characteristic mass found. Please input mass:   ')
 
     #Add additional variables to pandas
-    # First, need discharge_incr and charge_incr (have cap_incr) to use AddSpecificCapacity functions:
-    df = AddDischargeAndChargeIncr(df)
-    # Then, can add specific incremental capacity: (not really necessary, is in fact exported from Lanhe)
+    # First, need incremental cycle, discharge_incr and charge_incr (have cap_incr) to use AddSpecificCapacity functions:
+    df = addFromCurrents(df)
+    # Then, can add specific incremental capacity (not really necessary, is in fact exported from Lanhe) and cyclebased:
     df = AddSpecificCapacity.Incremental(df, char_mass)
-
-    # Need 'cycle' variable for cyclebased! Hopefully it can be exported from Lanhe.
-    #df = AddSpecificCapacity.Cyclebased(df, char_mass)
+    df = AddSpecificCapacity.Cyclebased(df, char_mass)
 
     # Todo: Add cycle specific capacity
     # Todo: Add cell info as for biologic?
@@ -111,11 +135,11 @@ def AddDischargeAndChargeIncr(df):
     charge_incr = []            # Initiate variables
 
     for i in range(0, len(df.index)):    # Read dataframe line for line
-        if df['mode'][i] == 'D' or 'D_Rate':  # If mode is 'D' (Maccor) or 'D_Rate' (Lanhe), add capacity variable to discharge variable, and add zero to charge variable. Vice versa.
+        if df['mode'][i] == 'D' or df['mode'][i]=='D_Rate':  # If mode is 'D' (Maccor) or 'D_Rate' (Lanhe), add capacity variable to discharge variable, and add zero to charge variable. Vice versa.
             discharge_incr.append(df['cap_incr'][i])
             charge_incr.append(0)
             continue                # Necesarry with continue to prevent extra 0 (it seems 'R' becomes true for 'C_Rate' or 'D_Rate')
-        if df['mode'][i] == 'C' or 'C_Rate':  # If mode is 'C' (Maccor) or 'C_Rate' (Lanhe), add capacity variable to charge variable, and add zero to discharge variable.
+        if df['mode'][i] == 'C' or df['mode'][i]=='C_Rate':  # If mode is 'C' (Maccor) or 'C_Rate' (Lanhe), add capacity variable to charge variable, and add zero to discharge variable.
             charge_incr.append(df['cap_incr'][i])
             discharge_incr.append(0)
             continue
@@ -126,6 +150,76 @@ def AddDischargeAndChargeIncr(df):
     df['discharge_incr'], df['charge_incr'] = [discharge_incr, charge_incr] # Add them as new columns to dataframe.
 
     return df
+
+def AddCycleIncr(df):    # Was used on Lanhe-files, but replaced with addFromCurrents function.
+    discharge_incr_float = StrToFloat.strToFloat(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
+    charge_incr_float = StrToFloat.strToFloat(df['charge_incr'].tolist())  # Extracting incremental charge as float
+    #current_float = StrToFloat.strToFloat(df['current'].tolist())  # Extracting incremental charge as float
+    cycle = []      # Initiates cycle variable (incremental cycle)
+    cycle_nr = 0    # Cycle counter that will be written to cycle variable
+    dis_char_cycle = False      # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    char_dis_cycle = False      # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    started = False             # Used to define if cycling has started
+
+    for i in range(0, len(discharge_incr_float)):
+
+        if discharge_incr_float[i]!=0 and discharge_incr_float[i-1] ==0 and started==False:    # New discharge and starting with discharge
+            dis_char_cycle = True
+            started = True
+        if charge_incr_float[i] != 0 and charge_incr_float[i - 1] == 0 and started == False:   # New charge and starting with charge
+            char_dis_cycle = True
+            started = True
+        if discharge_incr_float[i] != 0 and discharge_incr_float[i - 1] == 0 and dis_char_cycle == True:  # New discharge, which (might) define new cycle.
+            cycle_nr = cycle_nr + 1     # New cycle
+        if charge_incr_float[i] != 0 and charge_incr_float[i - 1] == 0 and char_dis_cycle == True:  # New charge, which (might) define new cycle.
+            cycle_nr = cycle_nr + 1     # New cycle
+
+        cycle.append(cycle_nr)
+
+    df['cycle'] = cycle # Add cycle variable as new column in dataframe.
+
+    return df
+
+def addFromCurrents(df):    # Adds incremental cycle, charge and discharge from current signs.
+    cycle = []           # Initiate variable
+    cycle_nr = 0         # Cycle counter that will be written to cycle variable
+    discharge_incr = []  # Initiate variable
+    charge_incr = []     # Initiate variable
+    dis_char_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    char_dis_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
+    started = False      # Used to define if cycling has started
+
+    for i in range(0, len(df['current'])):    # Read dataframe line for line
+        #---------------------------------
+        #  Cycle variable:
+        if df['current'][i] < 0 and df['current'][i-1] > 0 and started == False:  # New discharge, and current is turned on for first time
+            started = True
+            dis_char_cycle = True
+        if df['current'][i] > 0 and df['current'][i-1] < 0 and started == False:  # New charge, and current is turned on for first time
+            started = True
+            char_dis_cycle = True
+        if df['current'][i] < 0 and df['current'][i - 1] > 0 and started == True:  # New discharge, and new cycle
+            cycle_nr = cycle_nr + 1
+        if df['current'][i] > 0 and df['current'][i - 1] < 0 and started == True:  # New charge, and new cycle
+            cycle_nr = cycle_nr + 1
+        cycle.append(cycle_nr)
+        # ---------------------------------
+        # Discharge and charge variables:
+        if df['current'][i]==0:     # If current is zero, capacity will be zero
+            discharge_incr.append(0)
+            charge_incr.append(0)
+        if df['current'][i] < 0:  # Negative current means discharge
+            discharge_incr.append(df['cap_incr'][i])
+            charge_incr.append(0)
+        if df['current'][i] > 0:
+            discharge_incr.append(0)
+            charge_incr.append(df['cap_incr'][i])
+        # ---------------------------------
+
+    df['cycle'], df['discharge_incr'], df['charge_incr'] = [cycle, discharge_incr, charge_incr] # Add them as new columns to dataframe.
+
+    return df
+
 
 #Script for testing functions.
 CellKey = 'TixC_10HF17a_S_T1_02_APC_002C'

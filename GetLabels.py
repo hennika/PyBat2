@@ -26,6 +26,9 @@ def GetLabels(x):
         'cycle_nr': 'Cycles',
         'discharge_spec': 'Discharge capacity (mAh/g)',
         'charge_spec': 'Charge capacity (mAh/g)',
+        'Ew' : 'Ew (V)',
+        'Ec' : 'Ec (V)',
+        'Ew-Ec' : 'Ew-Ec (V)',
 
     }[x]
 

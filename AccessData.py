@@ -7,8 +7,6 @@ import numpy as np                # Matrise pakke
 import pandas as pd               # Database pakke
 import matplotlib.pyplot as plt   # Plottepakke
 import StrToFloat
-import ImportData as id
-import ConvertToPandas
 #from PyBat import Database
 #from PyBat import CellDatabase
 CellDatabase = 'C:/Users/andnor/OneDrive - NTNU/Diatoma/Experimental/Database/CellDatabase/'

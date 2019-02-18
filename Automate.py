@@ -40,12 +40,15 @@ def auto_import(search_word):
     raw_data = MyPaths.raw_data
     database = MyPaths.database
     all_files = support.search_file(search_word, raw_data)  # Search for cells with a specific name in the raw data folder.
-    response = support.input_cool('yellow','Do you want to convert these files? yes/no:   ')
+    response = support.input_cool('yellow','Do you want to convert these files? yes/no:   \n(.mpr and .mgr files will be skipped)   ')
 
     if response.lower() == "yes":
         for line in all_files:                  #Loop through all input files.
             file_name = line.stem               #Saves the file name
             file_path = line.as_posix()         #Saves the file path
+
+            if line.suffix == '.mpr' or line.suffix=='.mgr':
+                continue
 
             support.print_cool('blue', '-'*80 + '\nConverting: ' + file_name + line.suffix)
             response = support.input_cool('yellow', 'Do you want to change cell key (what the cell will be saved as)? (yes/any button):   ')
@@ -54,18 +57,22 @@ def auto_import(search_word):
             else:
                 None
 
-            if line.suffix == ".mpt":
+            identifier = identify_file(line.suffix, file_path)
+
+            if identifier == 'biologic':
                 ConvertToPandas.biologic(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Biologic: ' + file_name + line.suffix)
-            elif line.suffix == ".xls":
+            elif identifier == 'vmp3':
+                ConvertToPandas.vmp3(file_path, file_name, database.as_posix())
+                support.print_cool('green', 'Converted from VMP3: ' + file_name + line.suffix)
+            elif identifier == 'lanhe':
                 ConvertToPandas.lanhe(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Lanhe: ' + file_name + line.suffix)
+            elif identifier == 'maccor':
+                ConvertToPandas.maccor(file_path, file_name, database.as_posix())
+                support.print_cool('green', 'Converted from Maccor: ' + file_name + line.suffix)
             else:
-                try:
-                    ConvertToPandas.maccor(file_path, file_name, database.as_posix())
-                    support.print_cool('green', 'Converted from Maccor: ' + file_name + line.suffix)
-                except:
-                    support.print_cool('red', 'File not recognized: ' + file_path)
+                support.print_cool('red', 'File not recognized: ' + file_path)
 
     elif response.lower() == 'no':
         support.print_cool('green','No files converted')
@@ -118,9 +125,11 @@ def merge_biologic(search_word, location):     #function takes a vector of dataf
 
     return print("\n No merge conducted")
 
-def auto_plot (x, y, search_word):
+def auto_plot (search_word, **kwargs):
     import PlotSupport
     database = MyPaths.database
+    plots_folder = MyPaths.plots
+
     files = support.find_files(search_word, database)  # Finds and returns files as list
     support.print_files_nr(files)  # prints files with nr
 
@@ -131,19 +140,24 @@ def auto_plot (x, y, search_word):
     for i in range (0, len(c_response)):  # Loop through all cells to plot.
         cell_names.append((files[int(c_response[i])]).stem)  # Saves the cell name (.stem returns last path-element)
 
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = PlotSupport.SetPlotSpecs(x1=x, y1=y, legend=cell_names)  # Sets specifications for plot
-    pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=str(files[int(c_response[0])]),x1=x1, y1=y1)  # Sets specifications for first pickle
+    try:                # Checks legend and use cellnames if not found.
+        legend_use = kwargs['legend']
+    except:
+        legend_use = cell_names
+
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = PlotSupport.SetPlotSpecs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
+    pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=str(files[int(c_response[0])]), **kwargs)  # Sets specifications for first pickle
     PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)       # Adds this pickle with specifications to plot
-    
+
     for nr in range (2, len(c_response)+1):
   #      try:
         next_pickle_response = str(files[int(c_response[nr-1])])   # Looks up index in files given by the next cell in the response
         next_pickle_response_nr = 'pickle' + str(nr)
-        next_pickle_name, next_cycles, next_color, next_color_scheme = PlotSupport.SetNextPickle(2,pickle2=next_pickle_response, color_scheme2=PlotSupport.DefaultColorGradients(nr), x1=x1, y1=y1)
+        next_pickle_name,next_y, next_cycles, next_color, next_color_scheme = PlotSupport.SetNextPickle(nr,override=next_pickle_response, **kwargs)
         pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(
-            legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=y1, color1=next_color,
+            legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=next_y, color1=next_color,
             color_scheme1=next_color_scheme)
-        PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)
+        PlotSupport.AddPickleToPlot(df, cycles, x1, next_y, color_list)
 #        except:
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
 
@@ -152,3 +166,19 @@ def auto_plot (x, y, search_word):
 
     return
 
+def identify_file (suffix, file_path):
+    identifier = None   # Initiates result variable
+    if suffix == '.mpt':
+        with open(file_path, 'r') as file_input:
+            for line in file_input:  # Reads the data from the data_url line by line.
+                if line.find('Ewe-Ece') != -1:  # -1 if not found, returns index if found
+                    identifier = 'vmp3'
+        file_input.close()
+        if identifier == None:      # If suffix is mpt, but not vmp3-file, should be biologic file.
+            identifier = 'biologic'
+    elif suffix == '.xls':
+        identifier = 'lanhe'
+    elif suffix == '.txt' or suffix == '.TXT':
+        identifier = 'maccor'
+
+    return identifier

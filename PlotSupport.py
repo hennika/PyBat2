@@ -7,6 +7,7 @@ import matplotlib.patches as mpatches # Legend in plot
 import sys                        # For aborting scripts
 import GetLabels                  # For labels to x and y variables
 import math                       # For floor
+import MyPaths
 
 #-----------------------------------------------------------------------------------
 ########       Function for making list of color codes
@@ -99,7 +100,10 @@ def SetPlotSpecs(**kwargs):
     try:
         legend = kwargs['legend']
     except:
-        legend = None
+        try:
+            legend = kwargs['autolegend']   # autolegend variable used by auto_plot if no legend is specified.
+        except:
+            legend = None
     try:
         legend_loc = kwargs['legend_loc']
     except:
@@ -114,7 +118,11 @@ def SetPlotSpecs(**kwargs):
     try:
         save_path = kwargs['save_path']
     except:
-        save_path = None
+        try:
+            save_name = kwargs['save_as']
+            save_path = str(MyPaths.plots) + '\\' + save_name
+        except:
+            save_path = None
 
     return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend, legend_loc, legend_color_list, custom_code, save_path)
 
@@ -129,10 +137,10 @@ def SetPickleSpecs (legend_color_list, **kwargs):
         cycles = kwargs['cycles1']
     except:
         last_cycle = math.floor(df['cycle'].as_matrix().astype(float)[-1])    # Converts cycle column to float, then rounds last element (last cycle) down using floor function to convert to int.
-        cycles = range(0, last_cycle, 1)  # Creates list from 0 to last cycle, increment 1
+        cycles = range(0, last_cycle+1, 1)  # Creates list from 0 to last cycle, increment 1. Need +1 after last cycle to get actual last cycle. Look up range function.
     if cycles == None:                       # In the case that cycles1 = None from user.
         last_cycle = math.floor(df['cycle'].as_matrix().astype(float)[-1])    # Converts cycle column to float, then rounds last element (last cycle) down using floor function to convert to int.
-        cycles = range(0, last_cycle, 1)  # Creates list from 0 to last cycle, increment 1
+        cycles = range(0, last_cycle+1, 1)  # Creates list from 0 to last cycle, increment 1. Need +1 after last cycle to get actual last cycle. Look up range function.
     try:
         color_scheme = kwargs['color_scheme1']
     except:
@@ -219,7 +227,6 @@ def AddPickleToPlot (df, cycles, x1, y1, color_list):
     for i in range(0, len(cycles)):     # OBS: When plotting capacity vs cycle, it will only iterate once (different type of "cycle variable")
         df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]   # Make new data frame for given cycle
         plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=2, c=color_list[i])  # s = size
-
     return
 
 #-----------------------------------------------------------------------------------
@@ -229,7 +236,14 @@ def SetNextPickle (nr, **kwargs):
     try:
         kwargs['pickle'+str(nr-1)] = kwargs['pickle'+str(nr)]
     except:
+        try:
+            kwargs['pickle' + str(nr - 1)] = kwargs['override']
+        except:
           sys.exit(0)
+    try:
+        kwargs['y' + str(nr - 1)] = kwargs['y' + str(nr)]   # Looks for y2 etc, will be plotted on same axis as before.
+    except:
+        kwargs['y' + str(nr - 1)] = kwargs['y1']
     try:
         kwargs['cycles'+str(nr - 1)] = kwargs['cycles'+str(nr)]
     except:
@@ -246,7 +260,7 @@ def SetNextPickle (nr, **kwargs):
         else:
             kwargs['color'+str(nr - 1)] = None
 
-    return (kwargs['pickle'+str(nr-1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
+    return (kwargs['pickle'+str(nr-1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
 
 #-----------------------------------------------------------------------------------
 def PlotPlot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path):
