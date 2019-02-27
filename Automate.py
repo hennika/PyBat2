@@ -130,15 +130,24 @@ def auto_plot (search_word, **kwargs):
     database = MyPaths.database
     plots_folder = MyPaths.plots
 
-    files = support.find_files(search_word, database)  # Finds and returns files as list
-    support.print_files_nr(files)  # prints files with nr
+    # Identifying cells to plot
+    cell_names = []  # Initiates list for cells that will be plotted.
+    cell_paths = []  # Initiates list for paths to cells to be plotted.
+    finished = False    # Determines if user is finished with input
+    while finished == False:
+        files = support.find_files(search_word, database)  # Finds and returns files as list
+        support.print_files_nr(files)  # prints files with nr
+        response = support.input_cool('yellow', 'Which of these cells do you want to plot? Write corresponding numbers, separated with "+" (Ex: 0+2+3):  ')
+        c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
+        for i in range (0, len(c_response)):  # Loop through all cells to plot.
+            cell_names.append((files[int(c_response[i])]).stem)  # Saves the cell name (.stem returns last path-element)
+            cell_paths.append(str(files[int(c_response[i])]))    # Saves the full path to the cell
 
-    response = support.input_cool('yellow', 'Which of these cells do you want to plot? Write corresponding numbers, separated with "+" (Ex: 0+2+3):  ')
-    c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
-
-    cell_names = []     # Initiates list for cells that will be plotted
-    for i in range (0, len(c_response)):  # Loop through all cells to plot.
-        cell_names.append((files[int(c_response[i])]).stem)  # Saves the cell name (.stem returns last path-element)
+        response2 = support.input_cool('yellow', 'Search for more cells? (yes/any):   ')
+        if response2 == 'yes':
+            search_word = support.input_cool('yellow', 'Write new search word:   ')
+        else:
+            finished = True
 
     try:                # Checks legend and use cellnames if not found.
         legend_use = kwargs['legend']
@@ -146,12 +155,12 @@ def auto_plot (search_word, **kwargs):
         legend_use = cell_names
 
     x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = PlotSupport.SetPlotSpecs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
-    pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=str(files[int(c_response[0])]), **kwargs)  # Sets specifications for first pickle
+    pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
     PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)       # Adds this pickle with specifications to plot
 
-    for nr in range (2, len(c_response)+1):
+    for nr in range (2, len(cell_names)+1):
   #      try:
-        next_pickle_response = str(files[int(c_response[nr-1])])   # Looks up index in files given by the next cell in the response
+        next_pickle_response = cell_paths[nr-1]   # Looks up index in files given by the next cell in the response
         next_pickle_response_nr = 'pickle' + str(nr)
         next_pickle_name,next_y, next_cycles, next_color, next_color_scheme = PlotSupport.SetNextPickle(nr,override=next_pickle_response, **kwargs)
         pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(

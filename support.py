@@ -143,6 +143,9 @@ def input_cool(color, question):
     response = input(question)
     print('\x1b[0m')    # Stops color printing before next print
 
+    if response == 'abort':
+        sys.exit(1)
+
     return response
 
 def choose_color (color):           # Dictionary with color alternatives.
