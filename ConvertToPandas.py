@@ -29,6 +29,7 @@ def biologic(data_url, CellKey, Database):
     ##Add additional variables to pandas
     df = AddSpecificCapacity.Incremental(df, char_mass)
     df = AddSpecificCapacity.Cyclebased(df, char_mass)
+    df = AddSpecificCapacity.add_diffcap(df)
 
     try:
         cell_info = np.zeros(df.shape[0]) # Creates a list with equal length as the number of rows in the dataframe.
@@ -48,12 +49,18 @@ def vmp3 (data_url, CellKey, Database):
     column_names = Data[0][0:(len(Data[0]))]           # Extracts the name of the colums from the txt file to place them in the dataframe
     df = pd.DataFrame(Data[1:], columns=column_names)  # Creates the dataframe
     # Fixing columns. Column names from CV-file:  ['mode', 'ox/red', 'error', 'control changes', 'counter inc.', 'time/s', 'control/V', 'Ewe/V', '<I>/mA', 'cycle number', '(Q-Qo)/C', '<Ece>/V', 'P/W', 'Ewe-Ece/V']
-    del df['mode'], df['control changes'], df['counter inc.'], df['control/V']  # Deletes row that we do not want.
+    del df['mode'], df['control changes'], df['control/V']  # Deletes row that we do not want.
+    try:
+        del df['counter inc.']
+    except:
+        print()
+
     df = df.rename(columns={'ox/red':'redox', 'time/s':'time','Ewe/V':'Ew','<I>/mA':'current', 'cycle number':'cycle', '(Q-Qo)/C':'(Q-Qo)/C', 'Ece/V': 'Ec', 'P/W': 'power', 'Ewe-Ece/V':'Ew-Ec'}) # Renaming.
     try:     # Seems like exported file can either contain <> or not
         df.rename(columns={'<Ece>/V': 'Ec'})
     except:
         print()
+
     try:        # If galvanostatic cycling from vmp3, will have additional columns and want to add specific capacity etc:
         # Fixing columns part 2. Column names from galvanostatic cycling are combination of regular biologic file and CV: ['mode', 'ox/red', 'error', 'control changes', 'Ns changes', 'counter inc.', 'Ns', 'time/s', 'dq/mA.h', '(Q-Qo)/mA.h', 'control/V/mA', 'Ewe/V', 'Q charge/discharge/mA.h', 'half cycle', 'Ece/V', 'Energy charge/W.h', 'Energy discharge/W.h', 'Capacitance charge/µF', 'Capacitance discharge/µF', '<I>/mA', 'x', 'Q discharge/mA.h', 'Q charge/mA.h', 'Capacity/mA.h', 'Efficiency/%', 'control/V', 'control/mA', 'cycle number', 'P/W', 'Ewe-Ece/V']
         # Should delete some, rename similar as regular biologic file and rename vmp3-specific columns (latter already done above).
@@ -63,6 +70,11 @@ def vmp3 (data_url, CellKey, Database):
         df = AddSpecificCapacity.Cyclebased(df, char_mass)
     except:
         print('Imported as \"CV\"-file, specific capacity not added.')
+        if not 'cycle' in df.columns:
+            df = addFromCurrents(df)
+            print ('Cycle, discharge and charge variable added from currents.')
+        else:
+            print()
 
     df.to_pickle((Database +"/"+CellKey))  # Storing data as a Pickle
 
@@ -92,8 +104,8 @@ def lanhe(data_url, CellKey, Database):
     # Then, can add specific incremental capacity (not really necessary, is in fact exported from Lanhe) and cyclebased:
     df = AddSpecificCapacity.Incremental(df, char_mass)
     df = AddSpecificCapacity.Cyclebased(df, char_mass)
+    df = AddSpecificCapacity.add_diffcap(df)
 
-    # Todo: Add cycle specific capacity
     # Todo: Add cell info as for biologic?
 
     df.to_pickle((Database +"/"+CellKey))  # Store data as a Pickle
@@ -123,6 +135,7 @@ def maccor(data_url, CellKey, Database):
 
     df = AddSpecificCapacity.Incremental(df, char_mass)
     df = AddSpecificCapacity.Cyclebased(df, char_mass)
+    df = AddSpecificCapacity.add_diffcap(df)
 
     # Todo: Add cell info as for biologic?
 
@@ -188,30 +201,35 @@ def addFromCurrents(df):    # Adds incremental cycle, charge and discharge from 
     dis_char_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
     char_dis_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
     started = False      # Used to define if cycling has started
+    current_float = StrToFloat.strToFloat(df['current'].tolist())  # Extracting incremental current as float
 
-    for i in range(0, len(df['current'])):    # Read dataframe line for line
+    for i in range(0, len(current_float)):    # Read dataframe line for line
         #---------------------------------
         #  Cycle variable:
-        if df['current'][i] < 0 and df['current'][i-1] > 0 and started == False:  # New discharge, and current is turned on for first time
+        if current_float [i] < 0 and current_float[i-1] > 0 and started == False:  # New discharge, and current is turned on for first time
             started = True
             dis_char_cycle = True
-        if df['current'][i] > 0 and df['current'][i-1] < 0 and started == False:  # New charge, and current is turned on for first time
+        if current_float[i] > 0 and current_float [i-1] < 0 and started == False:  # New charge, and current is turned on for first time
             started = True
             char_dis_cycle = True
-        if df['current'][i] < 0 and df['current'][i - 1] > 0 and started == True:  # New discharge, and new cycle
+        if current_float[i] < 0 and current_float[i - 1] > 0 and started == True:  # New discharge, and new cycle
             cycle_nr = cycle_nr + 1
-        if df['current'][i] > 0 and df['current'][i - 1] < 0 and started == True:  # New charge, and new cycle
+        if current_float[i] > 0 and current_float[i - 1] < 0 and started == True:  # New charge, and new cycle
             cycle_nr = cycle_nr + 1
         cycle.append(cycle_nr)
         # ---------------------------------
         # Discharge and charge variables:
-        if df['current'][i]==0:     # If current is zero, capacity will be zero
+        if not 'cap_incr' in df.columns:    # Used for e.g. linear sweep voltammetry, where there is no capacity values. Skip/add zero.
             discharge_incr.append(0)
             charge_incr.append(0)
-        if df['current'][i] < 0:  # Negative current means discharge
+            continue
+        if current_float[i]==0:     # If current is zero, capacity will be zero
+            discharge_incr.append(0)
+            charge_incr.append(0)
+        if current_float[i] < 0:  # Negative current means discharge
             discharge_incr.append(df['cap_incr'][i])
             charge_incr.append(0)
-        if df['current'][i] > 0:
+        if current_float[i] > 0:
             discharge_incr.append(0)
             charge_incr.append(df['cap_incr'][i])
         # ---------------------------------
@@ -222,8 +240,8 @@ def addFromCurrents(df):    # Adds incremental cycle, charge and discharge from 
 
 
 #Script for testing functions.
-CellKey = 'TixC_10HF17a_S_T1_02_APC_002C'
-Database = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles'
+#CellKey = 'TixC_10HF17a_S_T1_02_APC_002C'
+#Database = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Pickles'
 
 # Biologic
 #data_url = 'C:/Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Raw_files\B1_combi\B1_combi_t02_01_APC-THF_2_4Vto0_2V_0_01C_CE3.mpt'

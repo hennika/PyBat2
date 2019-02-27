@@ -16,3 +16,7 @@ exported_data = Path(r'C:/Users/hennika/OneDrive - NTNU/PhD/Results/Cycling/Expo
 
 # (Default) Location to where plots will be saved (possible to override)
 plots = Path(r'C:/Users/hennika/OneDrive - NTNU/PhD/Results/Cycling/Plots')
+
+# Histogram size for calculating differential capacity
+# Should be significantly larger than the largest step in potential values.
+hist_size = 0.02    # Henning uses currently 0.02

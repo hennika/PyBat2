@@ -8,6 +8,8 @@ import StrToFloat                 # Converts strings to float
 import FixUnevenLength            # Makes two list same length by removing or adding element
 import sys                        # For exiting script among other
 import FindMinLength              # Returning minimum length of inputs
+import support
+import MyPaths
 
 def Incremental(df, char_mass):
 
@@ -73,6 +75,55 @@ def Cyclebased(df, char_mass):
 
     return df
 
-#Script for testing functions.
-# This function is used in ConvertToPandas, use that function to test this function.
-# Alternatively, you can uncomment the two last sentences in the script (plots the variables) and run ConvertToPandas.
+# ------------------------
+
+# Takes in dataframe and add differential capacity as new column.
+
+
+def add_diffcap (df):
+    # Differential capacity = dQ/dE
+    # Calculating differential capacity based on histograms:
+    # Iterates through values, every time the potential difference reaches the histogram size (e.g. 10mV), it calculates the capacity difference in that interval
+    #################################################
+    hist_size = MyPaths.hist_size  # VERY IMPORTANT #
+    #################################################
+    # histogram size for change in potential. *Should be significantly larger than the largest step in potential values!*
+    # Can use this to find largest step in potential values:
+    # max_volt_diff = max(np.diff(volt)) # Should give maximum voltage value difference.
+    # print ('Maximum incremental voltage difference appears to be', max_volt_diff)
+
+    volt=df['potential'].astype(float)  # Converts potential values to float.
+    cap=df['cap_incr_spec']             # Copies cap_incr_spec to new variable for easier code reading.
+
+    dQ = []         # Capacity difference between two measurements
+    dE = []         # Voltage difference between two measurements
+    diffCap = []    # Differential capacity between two measurements
+
+    dE_temp = 0         # temporary variable for cumulative dE
+    dQ_temp = 0         # temporary variable for cumulative dQ
+    volt_corr = []      # correlated voltage for diffCap variable
+    volt_corr_start = volt[0] # will be used to assign diffcap variable to "middle voltage" of histogram
+
+    for it in range(0, (len(volt) - 2)): # Need to stop iterating before list is exceeded
+        if (cap[it + 1] - cap[it]) < 0:  # If this is true, we are changing charging to discharge/vice versa
+            diffCap.append(None)         # Adds empty value in row instead of weird value, so the df['cycle'] can be used in plotting later
+            volt_corr.append(None)
+        else:
+            dQ_temp = dQ_temp + (cap[it+1] - cap[it])
+            dE_temp = dE_temp + (volt[it+1] - volt[it])
+            if abs(dE_temp) > hist_size:
+                diffCap.append (support.safe_div(dQ_temp,dE_temp))    # Differential capacity for interval
+                volt_corr.append ((volt_corr_start + volt[it])/2) #
+                volt_corr_start=volt[it]
+                #volt_corr.append(volt[it])                    # Relates this interval to last voltage value in the interval. Use middle instead.
+                dE_temp = 0         # emptying temporary variable. Okay to do as long dE steps in data are much smaller than hist_size
+                dQ_temp = 0         # emptying temporary variable
+            else:
+                diffCap.append(None)   # adding empty value in row, so the df['cycle'] can be used in plotting later
+                volt_corr.append(None)
+
+    volt_corr, diffCap = FixUnevenLength.FillNone(volt_corr, diffCap, target=len(df['potential'])) # This will add to "None" values to diffCap variable, as it is two values shorter
+
+    df['potential_diff_cap'], df['diff_cap'] = [volt_corr, diffCap] # Add volt_corr and diffCap as new columns.
+
+    return df

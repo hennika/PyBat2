@@ -12,6 +12,7 @@ def GetLabels(x):
     return {
         'time': 'Time (s)',
         'potential': 'Potential (V)',
+        'potential_diff_cap': 'Potential (V)',
         'energy_char': 'Charge energy (Wh)',
         'energy_dis': 'Discharge energy (Wh)',
         'capacitance_char': 'Charge capacitance (F)',
@@ -23,6 +24,7 @@ def GetLabels(x):
         'discharge_incr_spec': 'Discharge capacity (mAh/g)',
         'charge_incr_spec': 'Charge capacity (mAh/g)',
         'cap_incr_spec': 'Capacity (mAh/g)',
+        'diff_cap': 'Differential capacity (mAh/g/V)',
         'cycle_nr': 'Cycles',
         'discharge_spec': 'Discharge capacity (mAh/g)',
         'charge_spec': 'Charge capacity (mAh/g)',

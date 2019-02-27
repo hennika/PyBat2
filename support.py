@@ -155,3 +155,8 @@ def choose_color (color):           # Dictionary with color alternatives.
         'bold': '\033[1m',
         'underline': '\033[4m'
     }[color]
+
+def safe_div(x, y):     # Function for avoiding division by zero error, instead return zero.
+    if y == 0:
+        return 0
+    return x / y
