@@ -19,12 +19,11 @@ import support
 # Initializing using MyPaths file (that will not generally be updated so you do not need to update folder locations).
 raw_data = user_setup.raw_data               # Location to raw data (text files).
 database = user_setup.database               # Location to where the imported cells will be (when saved as pickle)
-exported_data = user_setup.exported_data     # Location to where the exported data will be
-plots = user_setup.plots                     # Location to where plots are saved
+#exported_data = user_setup.exported_data     # Location to where the exported data will be
+#plots = user_setup.plots                     # Location to where plots are saved
 
 
-print("hei på deg")
-print('Hallo du')
+
 """
 #########################################################################
 #               NEW USER?
@@ -83,7 +82,7 @@ search_word = 'Random'                                     # Maccor file
 #search_word = 'Random'
 automate.auto_plot(search_word,
                    x1 = 'cap_incr_spec',
-                   y1 = 'potential'
+                   y1 = 'potential',
                    #x1 = 'potential_diff_cap',
                    #y1 = 'diff_cap'
                    #cycles1=[0, 1, 10]

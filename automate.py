@@ -41,12 +41,13 @@ def auto_import(search_word, **kwargs):
     try:
         if kwargs['testing']==True:
             raw_data = Path(r'..\PyBat2\testing')
+            database = Path(r'..\PyBat2\testing\database')
         else:
             raw_data = user_setup.raw_data
     except:
         raw_data = user_setup.raw_data
+        database = user_setup.database
 
-    database = user_setup.database
     all_files = support.search_file(search_word, raw_data)  # Search for cells with a specific name in the raw data folder.
     response = support.input_cool('yellow','Do you want to convert these files? yes/no:   \n(.mpr and .mgr files will be skipped)   ')
 
@@ -133,9 +134,20 @@ def merge_biologic(search_word, location):     #function takes a vector of dataf
     return print("\n No merge conducted")
 
 def auto_plot (search_word, **kwargs):
+
     import plot_support
-    database = user_setup.database
-    plots_folder = user_setup.plots
+
+    try:
+        if kwargs['testing']==True:
+
+            database = Path(r'..\PyBat2\testing\database')
+            plots_folder = Path(r'..\PyBat2\testing\plots')
+        else:
+            database = Path(r'..\PyBat2\testing')
+            plots_folder = user_setup.plots
+    except:
+        plots_folder = user_setup.plots
+        database = user_setup.database
 
     # Identifying cells to plot
     cell_names = []  # Initiates list for cells that will be plotted.
