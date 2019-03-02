@@ -36,8 +36,16 @@ def automatic_conversion(search_word,location, CellDatabase):                   
 
     return
 
-def auto_import(search_word):
-    raw_data = MyPaths.raw_data
+def auto_import(search_word, **kwargs):
+
+    try:
+        if kwargs['testing']==True:
+            raw_data = Path(r'..\PyBat2\testing')
+        else:
+            raw_data = MyPaths.raw_data
+    except:
+        raw_data = MyPaths.raw_data
+
     database = MyPaths.database
     all_files = support.search_file(search_word, raw_data)  # Search for cells with a specific name in the raw data folder.
     response = support.input_cool('yellow','Do you want to convert these files? yes/no:   \n(.mpr and .mgr files will be skipped)   ')
