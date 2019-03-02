@@ -102,7 +102,7 @@ def merge_biologic(search_word, location):     #function takes a vector of dataf
         df_list = []                                                                                      #List of dataframes to be merged.
 
         for line in all_files:                                                                            #Creates a list of all dataframes to be merged.
-            df_list.append(access_data.AccessCellData(line.stem))
+            df_list.append(access_data.access_cell_data(line.stem))
 
         df_merged = pd.concat(df_list, axis=0)                                                            #Actuall merging of dataframes.
         df_merged = df_merged.ix[:,['cycle_nr', "charge_spec", "discharge_spec", 'QE']]                   #Desides which colums are to be merged.
