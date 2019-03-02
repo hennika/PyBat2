@@ -22,6 +22,8 @@ database = MyPaths.database               # Location to where the imported cells
 exported_data = MyPaths.exported_data     # Location to where the exported data will be
 plots = MyPaths.plots                     # Location to where plots are saved
 
+
+print("hei")
 """
 #########################################################################
 #               NEW USER?
