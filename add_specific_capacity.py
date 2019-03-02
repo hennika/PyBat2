@@ -11,7 +11,7 @@ import find_min_length              # Returning minimum length of inputs
 import support
 import user_setup
 
-def Incremental(df, char_mass):
+def incremental(df, char_mass):
 
     discharge_incr_float = string_to_float.strToFloat(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
     discharge_incr_spec = np.divide(discharge_incr_float,float(char_mass) / 1000)  # Divide by mass in grams to obtain specific capacity.
@@ -27,7 +27,7 @@ def Incremental(df, char_mass):
     return df
 
 
-def Cyclebased(df, char_mass):
+def cyclebased(df, char_mass):
     cycle_incr_float = string_to_float.strToFloat(df['cycle'].tolist())  # Extracting incremental cycle number as float
     discharge_incr_float = string_to_float.strToFloat(
         df['discharge_incr'].tolist())  # Extracting incremental discharge as float

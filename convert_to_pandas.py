@@ -27,8 +27,8 @@ def biologic(data_url, CellKey, Database):
     # print(df.columns)
 
     ##Add additional variables to pandas
-    df = add_specific_capacity.Incremental(df, char_mass)
-    df = add_specific_capacity.Cyclebased(df, char_mass)
+    df = add_specific_capacity.incremental(df, char_mass)
+    df = add_specific_capacity.cyclebased(df, char_mass)
     df = add_specific_capacity.add_diffcap(df)
 
     try:
@@ -66,8 +66,8 @@ def vmp3 (data_url, CellKey, Database):
         # Should delete some, rename similar as regular biologic file and rename vmp3-specific columns (latter already done above).
         del df['Ns changes'], df['Ns'], df['(Q-Qo)/mA.h'], df['control/V/mA'], df['Q charge/discharge/mA.h'], df['x']  # Deletes row that we do not want.
         df = df.rename(columns={'ox/red':'redox','dq/mA.h':'dq','half cycle':'halfcycle','Energy charge/W.h':'energy_char','Energy discharge/W.h':'energy_dis','Capacitance charge/µF':'capacitance_char','Capacitance discharge/µF':'capacitance_dis', 'Q discharge/mA.h':'discharge_incr', 'Q charge/mA.h':'charge_incr','Capacity/mA.h' : 'cap_incr', 'Efficiency/%': 'QE', 'control/mA' : 'current_aim' ,'cycle number':'cycle'})
-        df = add_specific_capacity.Incremental(df, char_mass)
-        df = add_specific_capacity.Cyclebased(df, char_mass)
+        df = add_specific_capacity.incremental(df, char_mass)
+        df = add_specific_capacity.cyclebased(df, char_mass)
     except:
         print('Imported as \"CV\"-file, specific capacity not added.')
         if not 'cycle' in df.columns:
@@ -102,8 +102,8 @@ def lanhe(data_url, CellKey, Database):
     # First, need incremental cycle, discharge_incr and charge_incr (have cap_incr) to use AddSpecificCapacity functions:
     df = addFromCurrents(df)
     # Then, can add specific incremental capacity (not really necessary, is in fact exported from Lanhe) and cyclebased:
-    df = add_specific_capacity.Incremental(df, char_mass)
-    df = add_specific_capacity.Cyclebased(df, char_mass)
+    df = add_specific_capacity.incremental(df, char_mass)
+    df = add_specific_capacity.cyclebased(df, char_mass)
     df = add_specific_capacity.add_diffcap(df)
 
     # Todo: Add cell info as for biologic?
@@ -133,8 +133,8 @@ def maccor(data_url, CellKey, Database):
 
     df = AddDischargeAndChargeIncr(df)
 
-    df = add_specific_capacity.Incremental(df, char_mass)
-    df = add_specific_capacity.Cyclebased(df, char_mass)
+    df = add_specific_capacity.incremental(df, char_mass)
+    df = add_specific_capacity.cyclebased(df, char_mass)
     df = add_specific_capacity.add_diffcap(df)
 
     # Todo: Add cell info as for biologic?
