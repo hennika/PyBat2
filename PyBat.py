@@ -23,7 +23,7 @@ exported_data = MyPaths.exported_data     # Location to where the exported data 
 plots = MyPaths.plots                     # Location to where plots are saved
 
 
-print("hei")
+print("hei på deg")
 """
 #########################################################################
 #               NEW USER?
