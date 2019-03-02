@@ -4,22 +4,22 @@
 import numpy as np                # Matrise pakke
 import pandas as pd               # Database pakke
 import matplotlib.pyplot as plt   # Plottepakke
-import StrToFloat                 # Converts strings to float
-import FixUnevenLength            # Makes two list same length by removing or adding element
+import string_to_float                 # Converts strings to float
+import fix_uneven_length            # Makes two list same length by removing or adding element
 import sys                        # For exiting script among other
-import FindMinLength              # Returning minimum length of inputs
+import find_min_length              # Returning minimum length of inputs
 import support
-import MyPaths
+import user_setup
 
 def Incremental(df, char_mass):
 
-    discharge_incr_float = StrToFloat.strToFloat(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
+    discharge_incr_float = string_to_float.strToFloat(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
     discharge_incr_spec = np.divide(discharge_incr_float,float(char_mass) / 1000)  # Divide by mass in grams to obtain specific capacity.
 
-    charge_incr_float = StrToFloat.strToFloat(df['charge_incr'].tolist())  # Extracting incremental discharge as float
+    charge_incr_float = string_to_float.strToFloat(df['charge_incr'].tolist())  # Extracting incremental discharge as float
     charge_incr_spec = np.divide(charge_incr_float,float(char_mass) / 1000)  # Divide by mass in grams to obtain specific capacity.
 
-    cap_incr_float = StrToFloat.strToFloat(df['cap_incr'].tolist())  # Extracting incremental discharge as float
+    cap_incr_float = string_to_float.strToFloat(df['cap_incr'].tolist())  # Extracting incremental discharge as float
     cap_incr_spec = np.divide(cap_incr_float,float(char_mass) / 1000)  # Divide by mass in grams to obtain specific capacity.
 
     df['discharge_incr_spec'], df['charge_incr_spec'], df['cap_incr_spec'] = [discharge_incr_spec, charge_incr_spec, cap_incr_spec]  # Add them as new columns.
@@ -28,10 +28,10 @@ def Incremental(df, char_mass):
 
 
 def Cyclebased(df, char_mass):
-    cycle_incr_float = StrToFloat.strToFloat(df['cycle'].tolist())  # Extracting incremental cycle number as float
-    discharge_incr_float = StrToFloat.strToFloat(
+    cycle_incr_float = string_to_float.strToFloat(df['cycle'].tolist())  # Extracting incremental cycle number as float
+    discharge_incr_float = string_to_float.strToFloat(
         df['discharge_incr'].tolist())  # Extracting incremental discharge as float
-    charge_incr_float = StrToFloat.strToFloat(df['charge_incr'].tolist())  # Extracting incremental discharge as float
+    charge_incr_float = string_to_float.strToFloat(df['charge_incr'].tolist())  # Extracting incremental discharge as float
 
     # df = df.astype(float)  # Converts all dataframe values to float
     last_cycle = int(cycle_incr_float[-1])  # Extracts last element of cycle column (last cycle nr) and converts to int.
@@ -61,14 +61,14 @@ def Cyclebased(df, char_mass):
             else:
                 charge_spec.append(charge_incr_float[i] / float(char_mass) * 1000)  # Adding specific charge/gram
 
-    discharge_spec, charge_spec, cycles = FixUnevenLength.RemoveLast(discharge_spec, charge_spec, cycles,
-                                                                     target=min(len(discharge_spec), len(charge_spec),
+    discharge_spec, charge_spec, cycles = fix_uneven_length.RemoveLast(discharge_spec, charge_spec, cycles,
+                                                                       target=min(len(discharge_spec), len(charge_spec),
                                                                                 len(cycles)))
 
     if (len(discharge_spec) != len(charge_spec) or len(discharge_spec) != len(cycles)):
         sys.exit("Error: Unequal lengths of discharge_spec/charge_spec/cycle_nr!")
 
-    discharge_spec, charge_spec, cycles = FixUnevenLength.FillNone(discharge_spec, charge_spec, cycles, target=len(
+    discharge_spec, charge_spec, cycles = fix_uneven_length.FillNone(discharge_spec, charge_spec, cycles, target=len(
         cycle_incr_float))  # Fill rest of column with 'None'
 
     df['discharge_spec'], df['charge_spec'], df['cycle_nr'] = [discharge_spec, charge_spec, cycles]  # Add them as new columns.
@@ -85,7 +85,7 @@ def add_diffcap (df):
     # Calculating differential capacity based on histograms:
     # Iterates through values, every time the potential difference reaches the histogram size (e.g. 10mV), it calculates the capacity difference in that interval
     #################################################
-    hist_size = MyPaths.hist_size  # VERY IMPORTANT #
+    hist_size = user_setup.hist_size  # VERY IMPORTANT #
     #################################################
     # histogram size for change in potential. *Should be significantly larger than the largest step in potential values!*
     # Can use this to find largest step in potential values:
@@ -122,7 +122,7 @@ def add_diffcap (df):
                 diffCap.append(None)   # adding empty value in row, so the df['cycle'] can be used in plotting later
                 volt_corr.append(None)
 
-    volt_corr, diffCap = FixUnevenLength.FillNone(volt_corr, diffCap, target=len(df['potential'])) # This will add to "None" values to diffCap variable, as it is two values shorter
+    volt_corr, diffCap = fix_uneven_length.FillNone(volt_corr, diffCap, target=len(df['potential'])) # This will add to "None" values to diffCap variable, as it is two values shorter
 
     df['potential_diff_cap'], df['diff_cap'] = [volt_corr, diffCap] # Add volt_corr and diffCap as new columns.
 

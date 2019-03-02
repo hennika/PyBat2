@@ -1,9 +1,9 @@
 
-import Automate
+import automate
 
 
 search_word = 'test'                                     # Maccor file
-Automate.auto_import(search_word, testing=True)
+automate.auto_import(search_word, testing=True)
 """Automate.auto_plot(search_word,
                    x1 = 'cap_incr_spec',
                    y1 = 'potential',

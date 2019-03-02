@@ -1,26 +1,26 @@
-import MyPaths
+import user_setup
 from pathlib import Path
-import Automate
+import automate
 import numpy as np                # Matrise pakke
 import glob
 import pandas as pd               # Database pakke
 import matplotlib.pyplot as plt   # Plottepakke
-import StrToFloat
-import ImportData as id
-import AddSpecificCapacity
-import FixUnevenLength            # Makes two list same length by removing or adding element
+import string_to_float
+import import_data as id
+import add_specific_capacity
+import fix_uneven_length            # Makes two list same length by removing or adding element
 import sys                        # For exiting script among other
-import ConvertToPandas
-import Plotter
-import AccessData
+import convert_to_pandas
+import plotter
+import access_data
 import support
 
 
 # Initializing using MyPaths file (that will not generally be updated so you do not need to update folder locations).
-raw_data = MyPaths.raw_data               # Location to raw data (text files).
-database = MyPaths.database               # Location to where the imported cells will be (when saved as pickle)
-exported_data = MyPaths.exported_data     # Location to where the exported data will be
-plots = MyPaths.plots                     # Location to where plots are saved
+raw_data = user_setup.raw_data               # Location to raw data (text files).
+database = user_setup.database               # Location to where the imported cells will be (when saved as pickle)
+exported_data = user_setup.exported_data     # Location to where the exported data will be
+plots = user_setup.plots                     # Location to where plots are saved
 
 
 print("hei på deg")
@@ -81,18 +81,18 @@ search_word = 'Random'                                     # Maccor file
 """
 
 #search_word = 'Random'
-Automate.auto_plot(search_word,
+automate.auto_plot(search_word,
                    x1 = 'cap_incr_spec',
                    y1 = 'potential'
                    #x1 = 'potential_diff_cap',
                    #y1 = 'diff_cap'
                    #cycles1=[0, 1, 10]
-             #      cycles2=[0, 1, 10],
-              #     cycles3=[0, 1, 10],
-               #    legend=['Cell 1', 'Cell 2', 'Cell 3'],
-                #   xlabel='Capacity (mAh/g MXene)',
-                 #  ylabel='Potential (V vs Mg/Mg$^{2+}$)',
-                  # save_as='Cells on all three testers'
+                   #      cycles2=[0, 1, 10],
+                   #     cycles3=[0, 1, 10],
+                   #    legend=['Cell 1', 'Cell 2', 'Cell 3'],
+                   #   xlabel='Capacity (mAh/g MXene)',
+                   #  ylabel='Potential (V vs Mg/Mg$^{2+}$)',
+                   # save_as='Cells on all three testers'
                    )
 
 

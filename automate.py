@@ -1,9 +1,9 @@
 import support
-import ConvertToPandas
-import MyPaths
+import convert_to_pandas
+import user_setup
 from pathlib import Path
 import matplotlib.pyplot as plt   # Plottepakke
-import AccessData
+import access_data
 import pandas as pd
 
 
@@ -19,9 +19,9 @@ def automatic_conversion(search_word,location, CellDatabase):                   
             file_path = line.as_posix()                                                                   #Saves the file path
 
             if line.suffix == ".txt":
-                ConvertToPandas.lanhe(file_path, file_name, CellDatabase.as_posix())
+                convert_to_pandas.lanhe(file_path, file_name, CellDatabase.as_posix())
             elif line.suffix == ".mpt":
-                ConvertToPandas.biologic(file_path,file_name, CellDatabase.as_posix())
+                convert_to_pandas.biologic(file_path, file_name, CellDatabase.as_posix())
             else:
                 print("File format not recognized")
 
@@ -42,11 +42,11 @@ def auto_import(search_word, **kwargs):
         if kwargs['testing']==True:
             raw_data = Path(r'..\PyBat2\testing')
         else:
-            raw_data = MyPaths.raw_data
+            raw_data = user_setup.raw_data
     except:
-        raw_data = MyPaths.raw_data
+        raw_data = user_setup.raw_data
 
-    database = MyPaths.database
+    database = user_setup.database
     all_files = support.search_file(search_word, raw_data)  # Search for cells with a specific name in the raw data folder.
     response = support.input_cool('yellow','Do you want to convert these files? yes/no:   \n(.mpr and .mgr files will be skipped)   ')
 
@@ -68,16 +68,16 @@ def auto_import(search_word, **kwargs):
             identifier = identify_file(line.suffix, file_path)
 
             if identifier == 'biologic':
-                ConvertToPandas.biologic(file_path, file_name, database.as_posix())
+                convert_to_pandas.biologic(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Biologic: ' + file_name + line.suffix)
             elif identifier == 'vmp3':
-                ConvertToPandas.vmp3(file_path, file_name, database.as_posix())
+                convert_to_pandas.vmp3(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from VMP3: ' + file_name + line.suffix)
             elif identifier == 'lanhe':
-                ConvertToPandas.lanhe(file_path, file_name, database.as_posix())
+                convert_to_pandas.lanhe(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Lanhe: ' + file_name + line.suffix)
             elif identifier == 'maccor':
-                ConvertToPandas.maccor(file_path, file_name, database.as_posix())
+                convert_to_pandas.maccor(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Maccor: ' + file_name + line.suffix)
             else:
                 support.print_cool('red', 'File not recognized: ' + file_path)
@@ -88,7 +88,6 @@ def auto_import(search_word, **kwargs):
         support.print_cool('red', 'Input invalid')
 
     return
-
 def merge_biologic(search_word, location):     #function takes a vector of dataframes an merged them into one dataframe based on the "cycle_nr, charge_spec, discharge_spec, QE" format.
 
     CellDatabase = Path(r'C:/Users/andnor/OneDrive - NTNU/Diatoma/Experimental/Database/CellDatabase/')   #Location where dataframes is stored.
@@ -102,7 +101,7 @@ def merge_biologic(search_word, location):     #function takes a vector of dataf
         df_list = []                                                                                      #List of dataframes to be merged.
 
         for line in all_files:                                                                            #Creates a list of all dataframes to be merged.
-            df_list.append(AccessData.AccessCellData(line.stem))
+            df_list.append(access_data.AccessCellData(line.stem))
 
         df_merged = pd.concat(df_list, axis=0)                                                            #Actuall merging of dataframes.
         df_merged = df_merged.ix[:,['cycle_nr', "charge_spec", "discharge_spec", 'QE']]                   #Desides which colums are to be merged.
@@ -134,9 +133,9 @@ def merge_biologic(search_word, location):     #function takes a vector of dataf
     return print("\n No merge conducted")
 
 def auto_plot (search_word, **kwargs):
-    import PlotSupport
-    database = MyPaths.database
-    plots_folder = MyPaths.plots
+    import plot_support
+    database = user_setup.database
+    plots_folder = user_setup.plots
 
     # Identifying cells to plot
     cell_names = []  # Initiates list for cells that will be plotted.
@@ -162,24 +161,24 @@ def auto_plot (search_word, **kwargs):
     except:
         legend_use = cell_names
 
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = PlotSupport.SetPlotSpecs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
-    pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
-    PlotSupport.AddPickleToPlot(df, cycles, x1, y1, color_list)       # Adds this pickle with specifications to plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = plot_support.SetPlotSpecs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
+    pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.SetPickleSpecs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list)       # Adds this pickle with specifications to plot
 
     for nr in range (2, len(cell_names)+1):
   #      try:
         next_pickle_response = cell_paths[nr-1]   # Looks up index in files given by the next cell in the response
         next_pickle_response_nr = 'pickle' + str(nr)
-        next_pickle_name,next_y, next_cycles, next_color, next_color_scheme = PlotSupport.SetNextPickle(nr,override=next_pickle_response, **kwargs)
-        pickle_name, df, cycles, color, color_list, legend_color_list = PlotSupport.SetPickleSpecs(
+        next_pickle_name,next_y, next_cycles, next_color, next_color_scheme = plot_support.SetNextPickle(nr, override=next_pickle_response, **kwargs)
+        pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.SetPickleSpecs(
             legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=next_y, color1=next_color,
             color_scheme1=next_color_scheme)
-        PlotSupport.AddPickleToPlot(df, cycles, x1, next_y, color_list)
+        plot_support.AddPickleToPlot(df, cycles, x1, next_y, color_list)
 #        except:
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
 
-    PlotSupport.PlotPlot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list,
-                             legend_loc, custom_code, save_path)  # Add labels and legend, and shows plot
+    plot_support.PlotPlot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list,
+                          legend_loc, custom_code, save_path)  # Add labels and legend, and shows plot
 
     return
 
