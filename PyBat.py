@@ -24,6 +24,7 @@ plots = MyPaths.plots                     # Location to where plots are saved
 
 
 print("hei på deg")
+print('Hallo du')
 """
 #########################################################################
 #               NEW USER?
@@ -47,6 +48,74 @@ print("hei på deg")
 #
 #########################################################################
 """
+
+#search_word = 'Random-cell-cycled-on-lanhe'
+search_word = 'Random'                                     # Maccor file
+#Automate.auto_import(search_word)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+#########################################################################
+#
+#                           PLOT DATA
+#
+#########################################################################
+"""
+
+#search_word = 'Random'
+Automate.auto_plot(search_word,
+                   x1 = 'cap_incr_spec',
+                   y1 = 'potential'
+                   #x1 = 'potential_diff_cap',
+                   #y1 = 'diff_cap'
+                   #cycles1=[0, 1, 10]
+             #      cycles2=[0, 1, 10],
+              #     cycles3=[0, 1, 10],
+               #    legend=['Cell 1', 'Cell 2', 'Cell 3'],
+                #   xlabel='Capacity (mAh/g MXene)',
+                 #  ylabel='Potential (V vs Mg/Mg$^{2+}$)',
+                  # save_as='Cells on all three testers'
+                   )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #------------------------------------------------------------------------
 # Auto importing (remove # to run code)
 #------------------------------------------------------------------------
@@ -57,6 +126,7 @@ print("hei på deg")
 #search_word = 'TixC_10HF17a_S_T1_02_APC_002C_008_4'                       # Lanhe file
 #search_word = 'B1_combi_multi_KOH_02'                                     # Maccor file
 #search_word = 'B1_combi'                                                  # Multiple files plotting
+#search_word = 'TixC_10HF17a_S_T1_06_APC'                                                  #
 
 # 2) Run code below and answer the pop-up questions:
 #Automate.auto_import(search_word)
@@ -93,14 +163,14 @@ print("hei på deg")
 # Auto plotting (remove # to run code)
 #------------------------------------------------------------------------
 # 1) Search for cell(s) you want to plot:
-#search_word = 'TixC_10HF17a'         # Example
+#search_word = 'TixC'         # Example
 
 # Specify x and y variables:
 #x = 'cycle_nr'     # Cycle based capacities
 #y = 'charge_spec'  # Cycle based capacities
 
-#x = 'cap_incr_spec'    # Potential curves
-#y = 'potential'        # Potential curves
+x = 'cap_incr_spec'    # Potential curves
+y = 'potential'        # Potential curves
 #y = 'Ew'               # 3-electrode working electrode potential
 #y2 = 'Ew-Ec'           # Plot same pickle twice ("0+0") to plot different y-variables for same cell.
 #y3 = 'Ec'              # 3-electrode counter electrode potential
@@ -109,7 +179,16 @@ print("hei på deg")
 #y = 'current'          # CV
 
 # Run this:
-#Automate.auto_plot(search_word, x1=x, y1=y)
+#Automate.auto_plot(search_word, x1=x, y1=y
+                    #cycles1=[0],
+                    #xlim=[1,3],
+                    #ylim=[-0.001,0.01],
+                    #xlabel='Capacity (mAh/g MXene-S composite)',
+                    #xlabel='Potential (V vs Mg/Mg$^{2+}$)',
+                    #legend=['MTI cell (304 steel)', 'Hohsen cell (316L steel)'],
+                    #legend_loc=2,
+                    #save_as='APC-THF LSV - MTI vs Hohsen - inset'
+ #                  )
 
 # You may supply specifications to plot if you like:
 #xlabel = 'Capacity (mAh/g MXene-S composite)'                  # Override default x label
