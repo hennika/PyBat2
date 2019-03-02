@@ -93,12 +93,12 @@ def error_message(string):
     return
 
 # Export data for e.g. plotting using other software.
-def export_data(pickle_path, pickle_name, destination, *argv):
-    #df = pd.read_pickle(pickle_path+'\\'+pickle_name)  # Reads pickle
-    df = pd.read_pickle(pickle_path)  # Reads pickle
+def export_data(pickle, pickle_name, *argv):
+    from user_setup import database as database
+    from user_setup import exported_data as exported_data
 
-    if not os.path.exists(destination):     # Making destination folder if it does not exists already.
-        os.makedirs(destination)
+    df = pd.read_pickle(database.as_posix() + '/' + pickle)  # Reads pickle
+
     #writer = pd.ExcelWriter(destination+'\\'+pickle_name+'.xlsx', engine='xlsxwriter')
     #counter = 0         # Counter needed for ExcelWriter to add next variable in next column (and not overwrite it).
     for arg in argv:     # Iterate through all variables specified
@@ -108,7 +108,7 @@ def export_data(pickle_path, pickle_name, destination, *argv):
             #counter = counter + 1      # Counter needed to add next variable in next column (and not overwrite it).
 
             # If csv-file:
-            df[arg].to_csv(str(destination) + '\\' + pickle_name + '.csv', sep='\t', float_format='%f', encoding='utf-8', index=False)
+            df[arg].to_csv(str(exported_data) + '\\' + pickle_name + '.csv', sep='\t', float_format='%f', encoding='utf-8', index=False)
         except:
             error_message('Error in reading/writing the variable to export')
 
@@ -120,8 +120,7 @@ def export_data(pickle_path, pickle_name, destination, *argv):
     #worksheet.set_column('A:AA', None, format1) # None argument refers to column width.
     #writer.save()
 
-    print (pickle_name + '.xlsx \n \t exported to \n' + str(destination))
-
+    print (pickle_name + '.xlsx \n \t exported to \n' + str(exported_data))
     return
 
 def print_cool (color, *argv):      # Prints arguments (as strings) with colors/bold/underline. Should handle strings and numbers.
