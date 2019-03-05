@@ -1,6 +1,6 @@
 
 # Takes a string as a variable and returns it as a float
-def strToFloat(string):
+def str_to_float(string):
     if type(string) == list:
         for index in range(0, len(string)):
             try:

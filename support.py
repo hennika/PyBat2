@@ -77,7 +77,7 @@ def open_figure(name,location):
    return pkl.load(open(location.as_posix() + '/' + name + ".pkl", 'rb'))
 
 
-def About(data_storage, CellKey):
+def about(data_storage, CellKey):
     df = pd.read_pickle((data_storage + CellKey + '.pkl'))
     print(df.columns)
     return

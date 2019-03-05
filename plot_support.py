@@ -14,7 +14,7 @@ import user_setup
 ## Takes optional color scheme as input
 ## Returns vector of colors to be used in plot
 
-def GetColors(df, cycles=None, color=None, color_scheme=None):
+def get_colors(df, cycles=None, color=None, color_scheme=None):
     color_list = []     # This will be the return variable containing all colors to be plotted.
 
     if color!=None:     # If single color is specified, color list will be a list of the same color for every cycle.
@@ -48,7 +48,7 @@ def GetColors(df, cycles=None, color=None, color_scheme=None):
     return color_list
 
 #-----------------------------------------------------------------------------------
-def DefaultColorGradients (nr):
+def default_color_gradients (nr):
     return {
         1 : 'Blues',
         2 : 'Oranges',
@@ -62,17 +62,17 @@ def DefaultColorGradients (nr):
         10: 'cool',
     }[nr]
 #-----------------------------------------------------------------------------------
-def SetPlotSpecs(**kwargs):
+def set_plot_specs(**kwargs):
     try:
         x1 = kwargs['x1']
-        get_labels.GetLabels(x1)
+        get_labels.get_labels(x1)
     except:
-        support.error_message('Not recognizable x variable (error in SetPlotSpecs - GetLabels)')
+        support.error_message('Not recognizable x variable (error in set_plot_specs - get_labels)')
     try:
         y1 = kwargs['y1']
-        get_labels.GetLabels(y1)
+        get_labels.get_labels(y1)
     except:
-        support.error_message('Not recognizable y variable (error in SetPlotSpecs - GetLabels)')
+        support.error_message('Not recognizable y variable (error in set_plot_specs - get_labels)')
     try:
         xlabel = kwargs['xlabel']
     except:
@@ -128,7 +128,7 @@ def SetPlotSpecs(**kwargs):
 
 #-----------------------------------------------------------------------------------
 
-def SetPickleSpecs (legend_color_list, **kwargs):
+def set_pickle_specs (legend_color_list, **kwargs):
 
     pickle_name = kwargs['pickle1']
     df = pd.read_pickle(pickle_name)  # Reads pickle as strings
@@ -144,7 +144,7 @@ def SetPickleSpecs (legend_color_list, **kwargs):
     try:
         color_scheme = kwargs['color_scheme1']
     except:
-        color_scheme = DefaultColorGradients(1)
+        color_scheme = default_color_gradients(1)
     try:
         color = kwargs['color1']
     except:
@@ -153,14 +153,14 @@ def SetPickleSpecs (legend_color_list, **kwargs):
         else:
             color = None
 
-    color_list = GetColors(df,cycles, color, color_scheme)     # Choose color maps from: https://matplotlib.org/examples/color/colormaps_reference.html
+    color_list = get_colors(df, cycles, color, color_scheme)     # Choose color maps from: https://matplotlib.org/examples/color/colormaps_reference.html
 
     legend_color_list.append(color_list[round(len(color_list) / 2)])  # Sets color for legend to be middle color if multiple cycles.
 
     return (pickle_name, df, cycles, color, color_list, legend_color_list)
 
 #-----------------------------------------------------------------------------------
-def AddLimits(xlim, ylim):  # Specifies x and y limits
+def add_limits(xlim, ylim):  # Specifies x and y limits
     if xlim != None:    # If not specified, will plot default
         try:
             plt.xlim(xlim)  # Specifies x limits (min, max) from user
@@ -173,7 +173,7 @@ def AddLimits(xlim, ylim):  # Specifies x and y limits
             print ('Not recognisable y limits. \n Format: ylim = [min, max] \n Example: ylim = [0.1, 2.2]')
     return
 #-----------------------------------------------------------------------------------
-def AddTicks(xticks, yticks):  # Specifies x and y ticks
+def add_ticks(xticks, yticks):  # Specifies x and y ticks
     if xticks != None:    # If not specified, will plot default
         try:
             plt.xticks(xticks)   # Specifies x ticks from user
@@ -186,19 +186,19 @@ def AddTicks(xticks, yticks):  # Specifies x and y ticks
             print ('Not recognisable y ticks. \n Format: yticks = [value1, value2, value3, ...] \n Example: yticks = [0, 0.5, 1, 1.5]')
     return
 #-----------------------------------------------------------------------------------
-def AddLabels(x1, y1, xlabel, ylabel):  # Add label to plot
+def add_labels(x1, y1, xlabel, ylabel):  # Add label to plot
     if xlabel == None:
-        plt.xlabel(get_labels.GetLabels(x1))  # Adds default label corresponding to variable
+        plt.xlabel(get_labels.get_labels(x1))  # Adds default label corresponding to variable
     else:
         plt.xlabel(xlabel)
     if ylabel == None:
-        plt.ylabel(get_labels.GetLabels(y1))  # Adds default label corresponding to variable
+        plt.ylabel(get_labels.get_labels(y1))  # Adds default label corresponding to variable
     else:
         plt.ylabel(ylabel)
 
     return
 #-----------------------------------------------------------------------------------
-def AddLegend(legend, colorlist, legend_loc=1):       # Legend guide: https://matplotlib.org/users/legend_guide.html
+def add_legend(legend, colorlist, legend_loc=1):       # Legend guide: https://matplotlib.org/users/legend_guide.html
     if legend == None:
         return
     patches=[]
@@ -207,7 +207,7 @@ def AddLegend(legend, colorlist, legend_loc=1):       # Legend guide: https://ma
     plt.legend(handles=patches, loc=legend_loc)     # Add all the specified legends to the plot.
     return
 #-----------------------------------------------------------------------------------
-def AddCustom (custom_code):    # Executes string in custom_code as code. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
+def add_custom (custom_code):    # Executes string in custom_code as code. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
     if custom_code!= None:
         try:
             exec(custom_code)
@@ -231,7 +231,7 @@ def AddPickleToPlot (df, cycles, x1, y1, color_list):
 
 #-----------------------------------------------------------------------------------
 
-def SetNextPickle (nr, **kwargs):
+def set_next_pickle (nr, **kwargs):
 
     try:
         kwargs['pickle'+str(nr-1)] = kwargs['pickle'+str(nr)]
@@ -251,7 +251,7 @@ def SetNextPickle (nr, **kwargs):
     try:
         kwargs['color_scheme'+str(nr - 1)] = kwargs['color_scheme'+str(nr)]
     except:
-        kwargs['color_scheme'+str(nr - 1)] = DefaultColorGradients(nr)
+        kwargs['color_scheme'+str(nr - 1)] = default_color_gradients(nr)
     try:
         kwargs['color'+str(nr - 1)] = kwargs['color'+str(nr)]
     except:
@@ -263,13 +263,13 @@ def SetNextPickle (nr, **kwargs):
     return (kwargs['pickle'+str(nr-1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
 
 #-----------------------------------------------------------------------------------
-def PlotPlot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path):
+def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path):
 
-    AddLimits(xlim, ylim) # Changes x and y limits (min, max), if specified.
-    AddTicks(xticks, yticks) # Changes x and y ticks (min, max), if specified.
-    AddLabels(x1, y1, xlabel, ylabel) # Adds label, either default to variable or specified
-    AddLegend(legend_list, legend_color_list, legend_loc) # Adding legend(s) to plot.
-    AddCustom(custom_code) # Executes string in custom_code as code. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
+    add_limits(xlim, ylim) # Changes x and y limits (min, max), if specified.
+    add_ticks(xticks, yticks) # Changes x and y ticks (min, max), if specified.
+    add_labels(x1, y1, xlabel, ylabel) # Adds label, either default to variable or specified
+    add_legend(legend_list, legend_color_list, legend_loc) # Adding legend(s) to plot.
+    add_custom(custom_code) # Executes string in custom_code as code. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
 
     SavePlot(save_path) # Save high resolution by saving displayed plot as .eps and use that in latex, or as png by using save_path variable
 

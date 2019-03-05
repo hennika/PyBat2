@@ -12,9 +12,9 @@ import fix_uneven_length            # Makes two list same length by removing or 
 import sys                        # For exiting script among other
 import support
 
-def biologic(data_url, CellKey, Database):
+def biologic(data_url, CellKey, database):
 
-    Data, char_mass = id.importBiologic(data_url)                     # use ID:importBiologic to import data and the characteristic mass from a bilogic txt file.
+    Data, char_mass = id.import_biologic(data_url)                     # use ID:import_biologic to import data and the characteristic mass from a bilogic txt file.
 
     colum_names = Data[0][0:(len(Data[0]))]                           # Extracts the name of the colums from the txt file to place them in the dataframe
     df = pd.DataFrame(Data[1:],columns=colum_names)                   # Creates the dataframe
@@ -27,8 +27,8 @@ def biologic(data_url, CellKey, Database):
     # print(df.columns)
 
     ##Add additional variables to pandas
-    df = add_specific_capacity.Incremental(df, char_mass)
-    df = add_specific_capacity.Cyclebased(df, char_mass)
+    df = add_specific_capacity.incremental(df, char_mass)
+    df = add_specific_capacity.cyclebased(df, char_mass)
     df = add_specific_capacity.add_diffcap(df)
 
     try:
@@ -40,14 +40,14 @@ def biologic(data_url, CellKey, Database):
     except:
         print('ERROR: Characteristic mass not availible from import document:'+CellKey +". "  'Neither characteristic mass or loading added to database')
 
-    df.to_pickle((Database +"/"+CellKey))  # OBS! Removed .pkl to avoid error. For storing data as a Pickle
+    df.to_pickle((database + "/" + CellKey))  # OBS! Removed .pkl to avoid error. For storing data as a Pickle
 
     return df
 
-def vmp3 (data_url, CellKey, Database):
-    Data, char_mass = id.importBiologic(data_url)     # use ID:importBiologic to import data and the characteristic mass from a biologic txt file.
-    column_names = Data[0][0:(len(Data[0]))]           # Extracts the name of the colums from the txt file to place them in the dataframe
-    df = pd.DataFrame(Data[1:], columns=column_names)  # Creates the dataframe
+def vmp3 (data_url, cell_key, database):
+    data, char_mass = id.import_biologic(data_url)     # use ID:import_biologic to import data and the characteristic mass from a biologic txt file.
+    column_names = data[0][0:(len(data[0]))]           # Extracts the name of the colums from the txt file to place them in the dataframe
+    df = pd.DataFrame(data[1:], columns=column_names)  # Creates the dataframe
     # Fixing columns. Column names from CV-file:  ['mode', 'ox/red', 'error', 'control changes', 'counter inc.', 'time/s', 'control/V', 'Ewe/V', '<I>/mA', 'cycle number', '(Q-Qo)/C', '<Ece>/V', 'P/W', 'Ewe-Ece/V']
     del df['mode'], df['control changes'], df['control/V']  # Deletes row that we do not want.
     try:
@@ -66,23 +66,23 @@ def vmp3 (data_url, CellKey, Database):
         # Should delete some, rename similar as regular biologic file and rename vmp3-specific columns (latter already done above).
         del df['Ns changes'], df['Ns'], df['(Q-Qo)/mA.h'], df['control/V/mA'], df['Q charge/discharge/mA.h'], df['x']  # Deletes row that we do not want.
         df = df.rename(columns={'ox/red':'redox','dq/mA.h':'dq','half cycle':'halfcycle','Energy charge/W.h':'energy_char','Energy discharge/W.h':'energy_dis','Capacitance charge/µF':'capacitance_char','Capacitance discharge/µF':'capacitance_dis', 'Q discharge/mA.h':'discharge_incr', 'Q charge/mA.h':'charge_incr','Capacity/mA.h' : 'cap_incr', 'Efficiency/%': 'QE', 'control/mA' : 'current_aim' ,'cycle number':'cycle'})
-        df = add_specific_capacity.Incremental(df, char_mass)
-        df = add_specific_capacity.Cyclebased(df, char_mass)
+        df = add_specific_capacity.incremental(df, char_mass)
+        df = add_specific_capacity.cyclebased(df, char_mass)
     except:
         print('Imported as \"CV\"-file, specific capacity not added.')
         if not 'cycle' in df.columns:
-            df = addFromCurrents(df)
+            df = add_from_currents(df)
             print ('Cycle, discharge and charge variable added from currents.')
         else:
             print()
 
-    df.to_pickle((Database +"/"+CellKey))  # Storing data as a Pickle
+    df.to_pickle((database + "/" + cell_key))  # Storing data as a Pickle
 
     return df
 
-def lanhe(data_url, CellKey, Database):
+def lanhe(data_url, cell_key, database):
 
-    df = id.importLanhe(data_url)   # Imports excel file as dataframe.
+    df = id.import_lanhe(data_url)   # Imports excel file as dataframe.
 
     del df['Index'],df['Energy/mWh'], df['SEnergy/Wh/kg'],df['SysTime'], df['Unnamed: 10'] # Deletes row that we do not want/need.
     df = df.rename(columns={'TestTime/Sec.':'time', 'StepTime/Sec.':'step_time','Voltage/V':'potential','Current/mA':'current','Capacity/mAh':'cap_incr', 'SCapacity/mAh/g':'cap_incr_spec', 'State': 'mode'})
@@ -100,25 +100,25 @@ def lanhe(data_url, CellKey, Database):
 
     #Add additional variables to pandas
     # First, need incremental cycle, discharge_incr and charge_incr (have cap_incr) to use AddSpecificCapacity functions:
-    df = addFromCurrents(df)
+    df = add_from_currents(df)
     # Then, can add specific incremental capacity (not really necessary, is in fact exported from Lanhe) and cyclebased:
-    df = add_specific_capacity.Incremental(df, char_mass)
-    df = add_specific_capacity.Cyclebased(df, char_mass)
+    df = add_specific_capacity.incremental(df, char_mass)
+    df = add_specific_capacity.cyclebased(df, char_mass)
     df = add_specific_capacity.add_diffcap(df)
 
     # Todo: Add cell info as for biologic?
 
-    df.to_pickle((Database +"/"+CellKey))  # Store data as a Pickle
+    df.to_pickle((database + "/" + cell_key))  # Store data as a Pickle
 
     return df
 
-def maccor(data_url, CellKey, Database):
-    Data, char_mass = id.importMaccor(data_url)  # use ID:importMaccor to import data and the characteristic mass from a Maccor txt file.
+def maccor(data_url, cell_key, database):
+    data, char_mass = id.import_maccor(data_url)  # use ID:import_maccor to import data and the characteristic mass from a Maccor txt file.
 
-    column_names = Data[0][0:(len(Data[0]))]  # Extracts the name of the colums from the txt file to place them in the dataframe
+    column_names = data[0][0:(len(data[0]))]  # Extracts the name of the colums from the txt file to place them in the dataframe
     column_names.append('NA')                 # Some of the rows have a '\n' as 30th column.
 
-    df = pd.DataFrame(Data[2:],  columns=column_names)  # Creates the dataframe
+    df = pd.DataFrame(data[2:],  columns=column_names)  # Creates the dataframe
     # Now column names are: ['Rec', 'Cycle P', 'Cycle C', 'Step', 'TestTime', 'StepTime', 'Cap. [Ah]', 'Ener. [Wh]', 'Current [A]', 'Voltage [V]', 'Md', 'ES', 'DPT Time', 'AUX1 [V]', 'VAR1', 'VAR2', 'VAR3', 'VAR4', 'VAR5', 'VAR6', 'VAR7', 'VAR8', 'VAR9', 'VAR10', 'VAR11', 'VAR12', 'VAR13', 'VAR14', 'VAR15\n', 'NA']
 
     del df['ES'], df['AUX1 [V]'], df['VAR1'], df['VAR2'],df['VAR3'],df['VAR4'],df['VAR5'],df['VAR6'],df['VAR7'],df['VAR8'],df['VAR9'],df['VAR10'],df['VAR11'],df['VAR12'],df['VAR13'],df['VAR14'],df['VAR15\n'],df['NA']  # Deletes row that we do not want.
@@ -131,19 +131,19 @@ def maccor(data_url, CellKey, Database):
                             'Md': 'mode', 'DPT Time': 'date'})
     # Now they are: ['rec', 'cycle_p', 'cycle', 'program_seq', 'time', 'program_seq_time', 'cap_incr', 'energy', 'current', 'potential', 'mode', 'date']
 
-    df = AddDischargeAndChargeIncr(df)
+    df = add_discharge_and_charge_incr(df)
 
-    df = add_specific_capacity.Incremental(df, char_mass)
-    df = add_specific_capacity.Cyclebased(df, char_mass)
+    df = add_specific_capacity.incremental(df, char_mass)
+    df = add_specific_capacity.cyclebased(df, char_mass)
     df = add_specific_capacity.add_diffcap(df)
 
     # Todo: Add cell info as for biologic?
 
-    df.to_pickle((Database +"/"+CellKey))                                   #Store data as a Pickle
+    df.to_pickle((database +"/" + cell_key))                                   #Store data as a Pickle
 
     return df
 
-def AddDischargeAndChargeIncr(df):
+def add_discharge_and_charge_incr(df):
     discharge_incr = []         # Initiate variables
     charge_incr = []            # Initiate variables
 
@@ -164,10 +164,10 @@ def AddDischargeAndChargeIncr(df):
 
     return df
 
-def AddCycleIncr(df):    # Was used on Lanhe-files, but replaced with addFromCurrents function.
-    discharge_incr_float = string_to_float.strToFloat(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
-    charge_incr_float = string_to_float.strToFloat(df['charge_incr'].tolist())  # Extracting incremental charge as float
-    #current_float = StrToFloat.strToFloat(df['current'].tolist())  # Extracting incremental charge as float
+def add_cycle_incr(df):    # Was used on Lanhe-files, but replaced with add_from_currents function.
+    discharge_incr_float = string_to_float.str_to_float(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
+    charge_incr_float = string_to_float.str_to_float(df['charge_incr'].tolist())  # Extracting incremental charge as float
+    #current_float = StrToFloat.str_to_float(df['current'].tolist())  # Extracting incremental charge as float
     cycle = []      # Initiates cycle variable (incremental cycle)
     cycle_nr = 0    # Cycle counter that will be written to cycle variable
     dis_char_cycle = False      # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
@@ -193,7 +193,7 @@ def AddCycleIncr(df):    # Was used on Lanhe-files, but replaced with addFromCur
 
     return df
 
-def addFromCurrents(df):    # Adds incremental cycle, charge and discharge from current signs.
+def add_from_currents(df):    # Adds incremental cycle, charge and discharge from current signs.
     cycle = []           # Initiate variable
     cycle_nr = 0         # Cycle counter that will be written to cycle variable
     discharge_incr = []  # Initiate variable
@@ -201,7 +201,7 @@ def addFromCurrents(df):    # Adds incremental cycle, charge and discharge from 
     dis_char_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
     char_dis_cycle = False  # Used to define if cycling begins with discharge or charge, uses that to define if cycle starts with discharge or charge.
     started = False      # Used to define if cycling has started
-    current_float = string_to_float.strToFloat(df['current'].tolist())  # Extracting incremental current as float
+    current_float = string_to_float.str_to_float(df['current'].tolist())  # Extracting incremental current as float
 
     for i in range(0, len(current_float)):    # Read dataframe line for line
         #---------------------------------
