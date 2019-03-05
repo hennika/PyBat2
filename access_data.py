@@ -15,7 +15,7 @@ def access_data(cell_key, variable):
 
     df = pd.read_pickle((database.as_posix() +"/" + cell_key + '.pkl'))
 
-    output = string_to_float.strToFloat(df[variable].tolist())    #Extracts the wanted variable "variable" from the dataframe, converts it to a string and returns it.
+    output = string_to_float.str_to_float(df[variable].tolist())    #Extracts the wanted variable "variable" from the dataframe, converts it to a string and returns it.
 
     return output
 

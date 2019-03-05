@@ -11,18 +11,18 @@ import support
 
 
 # Function for importing data from Biologic
-def importBiologic(data_url):                               #data_url is the location of data to be red.
+def import_biologic(data_url):                               #data_url is the location of data to be red.
     with open(data_url,'r') as file_input:
-        Evaluater = False                                   # Evaluation variable used to determide where the data in the biologic tex file is. (We don't want to read all the junk in the begining of the document).
+        evaluater = False                                   # Evaluation variable used to determide where the data in the biologic tex file is. (We don't want to read all the junk in the begining of the document).
         char_mass = []
-        Data = []                                           # Initiates a list to hold all data
+        data = []                                           # Initiates a list to hold all data
 
         for line in file_input:                             # Reads the data from the data_url line by line.
 
             line = line.replace(",",".")  # Replaces "," with "." so that it is possible to convert the data from a string to a float.
             line = line.rstrip()                            # Removes all kind of trailing characters. Eks: Whitespace and \n at the end of a line
 
-            if Evaluater == True:                           # Evaluates if the line contains data or
+            if evaluater == True:                           # Evaluates if the line contains data or
 
                     if line.find('mod') == 0 or line.find('ox/red')==0:
 
@@ -31,12 +31,12 @@ def importBiologic(data_url):                               #data_url is the loc
                         response = input('\nDo you want to add the line anyway? (yes/no)  ')
 
                         if response.lower == 'yes':
-                            Data.append(line.split("\t"))
+                            data.append(line.split("\t"))
                         else:
                             print("\n Line", line, " \n \n not added to dataframe")
 
                     else:
-                        Data.append(line.split("\t"))  # Appendas data from a give line to the Data list
+                        data.append(line.split("\t"))  # Appendas data from a give line to the data list
 
             elif line.find('Characteristic mass') == 0:     # Identifies the characteristic mass in the documet.
                 if char_mass:
@@ -44,45 +44,45 @@ def importBiologic(data_url):                               #data_url is the loc
                 char_mass.append(line.split(' ')[3])
             else:
                 if line.find('mod') == 0 and line.find('ox/red'):
-                    Data.append(line.split("\t"))
-                    Evaluater = True
+                    data.append(line.split("\t"))
+                    evaluater = True
 
     char_mass = check_char_mass(char_mass)
 
     file_input.close()
 
-    return Data, char_mass
+    return data, char_mass
 
 
 # Function for importing data from Lanhe
-def importLanhe(data_url):
+def import_lanhe(data_url):
 
     df = pd.read_excel(data_url, skiprows=0)  # Reads all rows (first row becomes headers). https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
 
     return df
 
 # Function for importing data from Maccor
-def importMaccor(data_url):
+def import_maccor(data_url):
     with open(data_url,'r') as file_input:
-        Evaluater = False  # Evaluation variable used to determine where the data in the text file is. (We don't want to read all the junk in the beginning of the document).
+        evaluater = False  # Evaluation variable used to determine where the data in the text file is. (We don't want to read all the junk in the beginning of the document).
         char_mass = None
-        Data = []  # Initiates a list to hold all data
+        data = []  # Initiates a list to hold all data
 
         for line in file_input:  # Reads the data from the data_url line by line.
             line = line.replace(",", ".")       # Replaces "," with "." so that it is possible to convert the data from a string to a float.
-            if Evaluater == True:  # Evaluates if the line contains data or
-                Data.append(line.split("\t"))   # Appends data from a give line to the Data list
+            if evaluater == True:  # Evaluates if the line contains data or
+                data.append(line.split("\t"))   # Appends data from a give line to the data list
             elif line.find('SCap')==0:          # Identifies the characteristic mass in the document, as grams(!).
                 char_mass = line.split("\t")[1] # The mass is found (zero element is 'Scap')
             else:
                 if line.find('Rec')==0 and line.find('Cycle P')==4:     # Attempts to find variables at positions they're supposed to if text file is exported correctly
-                    Data.append(line.split("\t"))   # Appends coloumn names
-                    Evaluater = True                # Sets evaluater to true, will start read in data from next line
+                    data.append(line.split("\t"))   # Appends coloumn names
+                    evaluater = True                # Sets evaluater to true, will start read in data from next line
 
     char_mass = check_char_mass(char_mass)      # Verifies found char_mass with user.
 
     file_input.close()
-    return Data, char_mass
+    return data, char_mass
 
 def check_char_mass (found_mass):
     use_mass = None # value to be returned
@@ -102,11 +102,6 @@ def check_char_mass (found_mass):
     return use_mass
 
 
-# # #Testing of functions
-#
-#data_url = '/Users/andnor/OneDrive - NTNU/Diatoma/Experimental/Experimental data/Data Transfers/180226, DataTransfer/Diatoma, Biologic/180214/180214_SiO2MSC1_35CB_ECDEC_17_Hold120_2mV_CE5.mpt'
-#Data = importBiologic(data_url)
-#print(Data[0][0])
 
 
 

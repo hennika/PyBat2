@@ -8,7 +8,7 @@ import convert_to_pandas
 ########       Script for returning labels for plot
 # Takes in variable as input and returns the corresponding string
 
-def GetLabels(x):
+def get_labels(x):
     return {
         'time': 'Time (s)',
         'potential': 'Potential (V)',
@@ -36,4 +36,4 @@ def GetLabels(x):
 
 #####    Script for testing function
 #variable1 = 'potential'
-#print (GetLabels(variable1))
+#print (get_labels(variable1))

@@ -2,7 +2,7 @@
 # 1) Filling them with 'None' values to target length
 # 2) Removing the last elements until target length is reached.
 
-def FillNone(*args,**kwargs):
+def fill_none(*args, **kwargs):
     try:
         target = kwargs['target']
     except:
@@ -15,7 +15,7 @@ def FillNone(*args,**kwargs):
     return new_args
 
 
-def RemoveLast(*args,**kwargs):
+def remove_last(*args, **kwargs):
     try:
         target = kwargs['target']
     except:
