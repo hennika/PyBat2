@@ -86,7 +86,7 @@ def import_maccor(data_url):
 
 def check_char_mass (found_mass):
     use_mass = None # value to be returned
-    if found_mass!=None:
+    if found_mass:
         support.print_cool('blue', 'Found this/these characteristic mass (mg): ', found_mass)
         response = support.input_cool('yellow', '\nUse this? (enter/no):   \n(If multiple masses, will use first)   ')
         if response == 'no':
