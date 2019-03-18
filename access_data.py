@@ -13,7 +13,7 @@ from user_setup import database as database
 
 def access_data(cell_key, variable):
 
-    df = pd.read_pickle((database.as_posix() +"/" + cell_key + '.pkl'))
+    df = pd.read_pickle((database.as_posix() +"/" + cell_key))
 
     output = string_to_float.str_to_float(df[variable].tolist())    #Extracts the wanted variable "variable" from the dataframe, converts it to a string and returns it.
 
@@ -22,7 +22,7 @@ def access_data(cell_key, variable):
 
 def access_cell_data(cell_key):
 
-    df = pd.read_pickle(database.as_posix() + "/" + cell_key + '.pkl')
+    df = pd.read_pickle(database.as_posix() + "/" + cell_key )
     df = df.astype(float)
     return df
 
