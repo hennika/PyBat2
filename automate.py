@@ -40,8 +40,8 @@ def auto_import(search_word, **kwargs):
 
     try:
         if kwargs['testing']==True:
-            raw_data = Path(r'..\PyBat2\testing')
-            database = Path(r'..\PyBat2\testing\database')
+            raw_data = Path(r'..\PyBat2-master\testing')
+            database = Path(r'..\PyBat2-master\testing\database')
         else:
             raw_data = user_setup.raw_data
     except:
@@ -140,10 +140,10 @@ def auto_plot (search_word, **kwargs):
     try:
         if kwargs['testing']==True:
 
-            database = Path(r'..\PyBat2\testing\database')
-            plots_folder = Path(r'..\PyBat2\testing\plots')
+            database = Path(r'..\PyBat2-master\testing\database')
+            plots_folder = Path(r'..\PyBat2-master\testing\plots')
         else:
-            database = Path(r'..\PyBat2\testing')
+            database = Path(r'..\PyBat2-master\testing')
             plots_folder = user_setup.plots
     except:
         plots_folder = user_setup.plots
