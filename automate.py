@@ -1,5 +1,5 @@
 import support
-import convert_to_pandas
+import import_cell
 import user_setup
 from pathlib import Path
 import matplotlib.pyplot as plt   # Plottepakke
@@ -19,9 +19,9 @@ def automatic_conversion(search_word, location, cell_database):                 
             file_path = line.as_posix()                                                                   #Saves the file path
 
             if line.suffix == ".txt":
-                convert_to_pandas.lanhe(file_path, file_name, cell_database.as_posix())
+                import_cell.lanhe(file_path, file_name, cell_database.as_posix())
             elif line.suffix == ".mpt":
-                convert_to_pandas.biologic(file_path, file_name, cell_database.as_posix())
+                import_cell.biologic(file_path, file_name, cell_database.as_posix())
             else:
                 print("File format not recognized")
 
@@ -32,7 +32,7 @@ def automatic_conversion(search_word, location, cell_database):                 
         print("\n No files converted")
 
     else:
-        print("\n Input invalide")
+        print("\n Input invalid")
 
     return
 
@@ -69,16 +69,16 @@ def auto_import(search_word, **kwargs):
             identifier = identify_file(line.suffix, file_path)
 
             if identifier == 'biologic':
-                convert_to_pandas.biologic(file_path, file_name, database.as_posix())
+                import_cell.biologic(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Biologic: ' + file_name + line.suffix)
             elif identifier == 'vmp3':
-                convert_to_pandas.vmp3(file_path, file_name, database.as_posix())
+                import_cell.vmp3(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from VMP3: ' + file_name + line.suffix)
             elif identifier == 'lanhe':
-                convert_to_pandas.lanhe(file_path, file_name, database.as_posix())
+                import_cell.lanhe(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Lanhe: ' + file_name + line.suffix)
             elif identifier == 'maccor':
-                convert_to_pandas.maccor(file_path, file_name, database.as_posix())
+                import_cell.maccor(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Maccor: ' + file_name + line.suffix)
             else:
                 support.print_cool('red', 'File not recognized: ' + file_path)

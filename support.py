@@ -1,9 +1,6 @@
 # Library for all supporting functions to Pybat
 #import numpy as np                # Matrise pakke
-import os
 import sys                         # For aborting scripts
-from glob import glob
-from pathlib import Path
 import pandas as pd               # Database pakke
 import matplotlib.pyplot as plt   # Plottepakke
 import pickle as pkl
@@ -92,37 +89,6 @@ def error_message(string):
 
     return
 
-# Export data for e.g. plotting using other software.
-def export_data(pickle, pickle_name, *argv):
-    from user_setup import database as database
-    from user_setup import exported_data as exported_data
-
-    df = pd.read_pickle(database.as_posix() + '/' + pickle)  # Reads pickle
-
-    #writer = pd.ExcelWriter(destination+'\\'+pickle_name+'.xlsx', engine='xlsxwriter')
-    #counter = 0         # Counter needed for ExcelWriter to add next variable in next column (and not overwrite it).
-    for arg in argv:     # Iterate through all variables specified
-        try:
-            # If Excel:
-            #df[arg].to_excel(writer, startcol=counter, index=False, freeze_panes=[1,0])     # Freezes top row, for easy reading.
-            #counter = counter + 1      # Counter needed to add next variable in next column (and not overwrite it).
-
-            # If csv-file:
-            df[arg].to_csv(str(exported_data) + '\\' + pickle_name + '.csv', sep='\t', float_format='%f', encoding='utf-8', index=False)
-        except:
-            error_message('Error in reading/writing the variable to export')
-
-    # Add some cell formats for prettier values in Excel:
-    # OBS! Comma and scientific writing may cause some problems.
-    #workbook = writer.book
-    #worksheet = writer.sheets['Sheet1']
-    #format1 = workbook.add_format({'num_format': '0.00'})
-    #worksheet.set_column('A:AA', None, format1) # None argument refers to column width.
-    #writer.save()
-
-    print (pickle_name + '.xlsx \n \t exported to \n' + str(exported_data))
-    return
-
 def print_cool (color, *argv):      # Prints arguments (as strings) with colors/bold/underline. Should handle strings and numbers.
     color_choice = choose_color(color)  # Collects corresponding color code
 
@@ -162,3 +128,43 @@ def safe_div(x, y):     # Function for avoiding division by zero error, instead 
     if y == 0:
         return 0
     return x / y
+
+
+def fill_none(*args, **kwargs):     # Takes in lists and make them even by filling them with 'None' values to target length
+    try:
+        target = kwargs['target']
+    except:
+        print('Unrecognizable target length')
+    new_args = []
+    for arg in args:
+        while len(arg) < target:
+            arg.append(None)
+        new_args.append(arg)
+    return new_args
+
+
+def remove_last(*args, **kwargs):   # Takes in lists and make them even by removing the last elements until target length is reached.
+
+    try:
+        target = kwargs['target']
+    except:
+        print('Unrecognizable target length')
+    new_args = []
+    for arg in args:
+        while len(arg) > target:
+            arg.pop()
+        new_args.append(arg)
+    return new_args
+
+
+def str_to_float(string):   # Takes a string as a variable and returns it as a float
+    if type(string) == list:
+        for index in range(0, len(string)):
+            try:
+                string[index] = float(string[index])
+            except:
+                None
+    else:
+        string = float(string)
+
+    return string

@@ -1,17 +1,10 @@
-# About scrip:
-#-Loads biologic data and returns a list Data and the characteristic mass. Data is a list of list with all data from the txt file.
+# About script:
+# Reads raw data and returns a list Data and the characteristic mass. Data is a list of list with all data from the txt file.
 
-
-import numpy as np                # Matrise pakke
 import pandas as pd               # Database pakke
-import matplotlib.pyplot as plt   # Plottepakke
-import string_to_float
-import support
 
-
-
-# Function for importing data from Biologic
-def import_biologic(data_url):                               #data_url is the location of data to be red.
+# Data from Biologic
+def import_biologic(data_url):                              # data_url is the location of data to be read.
     with open(data_url,'r') as file_input:
         evaluater = False                                   # Evaluation variable used to determide where the data in the biologic tex file is. (We don't want to read all the junk in the begining of the document).
         char_mass = []
@@ -25,20 +18,16 @@ def import_biologic(data_url):                               #data_url is the lo
             if evaluater == True:                           # Evaluates if the line contains data or
 
                     if line.find('mod') == 0 or line.find('ox/red')==0:
-
                         print("\n " ,line, "\n\n  Is not a int/float ")
-
                         response = input('\nDo you want to add the line anyway? (yes/no)  ')
-
                         if response.lower == 'yes':
                             data.append(line.split("\t"))
                         else:
                             print("\n Line", line, " \n \n not added to dataframe")
-
                     else:
-                        data.append(line.split("\t"))  # Appendas data from a give line to the data list
+                        data.append(line.split("\t"))  # Appends data from a given line to the data list
 
-            elif line.find('Characteristic mass') == 0:     # Identifies the characteristic mass in the documet.
+            elif line.find('Characteristic mass') == 0:     # Identifies the characteristic mass in the text document.
                 if char_mass:
                     char_mass.append(float(line.split(' ')[3]))
                 char_mass.append(line.split(' ')[3])
@@ -47,11 +36,11 @@ def import_biologic(data_url):                               #data_url is the lo
                     data.append(line.split("\t"))
                     evaluater = True
 
-    char_mass = check_char_mass(char_mass)
-
     file_input.close()
 
-    return data, char_mass
+    df = pd.DataFrame(data[1:], columns=data[0][0:(len(data[0]))])  # Creates the dataframe, with column names from first row.
+
+    return df, char_mass
 
 
 # Function for importing data from Lanhe
@@ -79,27 +68,13 @@ def import_maccor(data_url):
                     data.append(line.split("\t"))   # Appends coloumn names
                     evaluater = True                # Sets evaluater to true, will start read in data from next line
 
-    char_mass = check_char_mass(char_mass)      # Verifies found char_mass with user.
-
     file_input.close()
-    return data, char_mass
 
-def check_char_mass (found_mass):
-    use_mass = None # value to be returned
-    if found_mass:
-        support.print_cool('blue', 'Found this/these characteristic mass (mg): ', found_mass)
-        response = support.input_cool('yellow', '\nUse this? (enter/no):   \n(If multiple masses, will use first)   ')
-        if response == 'no':
-            use_mass = support.input_cool('yellow', 'Please write desired mass (mg):   ')
-        elif type(found_mass)==list:
-            use_mass = found_mass[0]
-        else:
-            use_mass = found_mass
+    column_names = data[0][0:(len(data[0]))]  # Extracts the name of the colums from the txt file to place them in the dataframe
+    column_names.append('NA')  # Some of the rows have a '\n' as 30th column.
+    df = pd.DataFrame(data[2:], columns=column_names)  # Creates the dataframe
 
-    else:
-        use_mass = support.input_cool('yellow', 'No characteristic mass found. Please write desired mass (mg):   ')
-
-    return use_mass
+    return df, char_mass
 
 
 

@@ -1,11 +1,9 @@
 import numpy as np                # Matrise pakke
 import pandas as pd               # Database pakke
-import get_labels                  # For verifying correct x and y input
 import support                    # For error handling
 import matplotlib.pyplot as plt   # Plottepakke
 import matplotlib.patches as mpatches # Legend in plot
 import sys                        # For aborting scripts
-import get_labels                  # For labels to x and y variables
 import math                       # For floor
 import user_setup
 
@@ -65,12 +63,12 @@ def default_color_gradients (nr):
 def set_plot_specs(**kwargs):
     try:
         x1 = kwargs['x1']
-        get_labels.get_labels(x1)
+        get_labels(x1)
     except:
         support.error_message('Not recognizable x variable (error in set_plot_specs - get_labels)')
     try:
         y1 = kwargs['y1']
-        get_labels.get_labels(y1)
+        get_labels(y1)
     except:
         support.error_message('Not recognizable y variable (error in set_plot_specs - get_labels)')
     try:
@@ -188,11 +186,11 @@ def add_ticks(xticks, yticks):  # Specifies x and y ticks
 #-----------------------------------------------------------------------------------
 def add_labels(x1, y1, xlabel, ylabel):  # Add label to plot
     if xlabel == None:
-        plt.xlabel(get_labels.get_labels(x1))  # Adds default label corresponding to variable
+        plt.xlabel(get_labels(x1))  # Adds default label corresponding to variable
     else:
         plt.xlabel(xlabel)
     if ylabel == None:
-        plt.ylabel(get_labels.get_labels(y1))  # Adds default label corresponding to variable
+        plt.ylabel(get_labels(y1))  # Adds default label corresponding to variable
     else:
         plt.ylabel(ylabel)
 
@@ -277,3 +275,28 @@ def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, l
 
     return
 #-----------------------------------------------------------------------------------
+def get_labels(x):  # Takes in variable as input and returns the corresponding string
+    return {
+        'time': 'Time (s)',
+        'potential': 'Potential (V)',
+        'potential_diff_cap': 'Potential (V)',
+        'energy_char': 'Charge energy (Wh)',
+        'energy_dis': 'Discharge energy (Wh)',
+        'capacitance_char': 'Charge capacitance (F)',
+        'capacitance_dis': 'Discharge capacitance (F)',
+        'current': 'Current (mA)',
+        'charge_incr': 'Charge capacity (mAh)',
+        'discharge_incr': 'Discharge capacity (mAh)',
+        'cap_incr': 'Capacity (mAh)',
+        'discharge_incr_spec': 'Discharge capacity (mAh/g)',
+        'charge_incr_spec': 'Charge capacity (mAh/g)',
+        'cap_incr_spec': 'Capacity (mAh/g)',
+        'diff_cap': 'Differential capacity (mAh/g/V)',
+        'cycle_nr': 'Cycles',
+        'discharge_spec': 'Discharge capacity (mAh/g)',
+        'charge_spec': 'Charge capacity (mAh/g)',
+        'Ew' : 'Ew (V)',
+        'Ec' : 'Ec (V)',
+        'Ew-Ec' : 'Ew-Ec (V)',
+
+    }[x]

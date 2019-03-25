@@ -5,9 +5,7 @@
 
 import numpy as np                # Matrise pakke
 import pandas as pd               # Database pakke
-import matplotlib.pyplot as plt   # Plottepakke
-
-import string_to_float
+import support
 from user_setup import database as database
 
 
@@ -15,7 +13,7 @@ def access_data(cell_key, variable):
 
     df = pd.read_pickle((database.as_posix() +"/" + cell_key))
 
-    output = string_to_float.str_to_float(df[variable].tolist())    #Extracts the wanted variable "variable" from the dataframe, converts it to a string and returns it.
+    output = support.str_to_float(df[variable].tolist())    #Extracts the wanted variable "variable" from the dataframe, converts it to a string and returns it.
 
     return output
 

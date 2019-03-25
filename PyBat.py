@@ -1,4 +1,5 @@
-
+import pandas as pd
+import export_data
 import user_setup
 import automate
 import access_data
@@ -46,8 +47,7 @@ search_word = 'Random'
 #export_file = 'your_filename_here'                  # Filename of exported file
 #export_variables = ['cap_incr_spec', 'potential']   # Variables to export (as many as you like)
 # Run this:
-#support.export_data(export_cell, export_file, export_variables)
-
+#export_data.export_data(export_cell, export_file, export_variables)
 
 
 
