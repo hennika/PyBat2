@@ -182,9 +182,7 @@ def auto_plot (search_word, **kwargs):
         next_pickle_response = cell_paths[nr-1]   # Looks up index in files given by the next cell in the response
         next_pickle_response_nr = 'pickle' + str(nr)
         next_pickle_name,next_y, next_cycles, next_color, next_color_scheme = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
-        pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(
-            legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=next_y, color1=next_color,
-            color_scheme1=next_color_scheme)
+        pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=next_y, color1=next_color, color_scheme1=next_color_scheme)
         plot_support.AddPickleToPlot(df, cycles, x1, next_y, color_list)
 #        except:
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)

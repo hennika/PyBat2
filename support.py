@@ -10,6 +10,7 @@ def search_file(search_word, location):                                         
     #Search_word: The word that will be search for in the subfolders of "location"
 
     all_files = find_files(search_word, location)   # Finds and returns files as list
+    all_files = remove_files(all_files)     # Removes specific types of files from list
 
     print('\033[94m')   # Starts printing in blue until '\x1b[0m' stops it (at definition end)
     for line in all_files:
@@ -17,6 +18,14 @@ def search_file(search_word, location):                                         
     print('\x1b[0m')  # Stops color printing
 
     return all_files
+
+def remove_files (files):   # Keeps only supported files for importing.
+    supported = ['.mpt', '.txt', '.TXT', '.xls', '.xlsx']
+    files_filtered = []
+    for line in files:
+        if any(x in line.suffix for x in supported):
+            files_filtered.append(line)
+    return files_filtered
 
 def print_files_nr (files): # Prints files with nr first (starting at 0)
     counter = 0

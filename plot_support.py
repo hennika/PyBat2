@@ -146,14 +146,22 @@ def set_pickle_specs (legend_color_list, **kwargs):
     try:
         color = kwargs['color1']
     except:
-        if kwargs['x1'] != 'cap_incr_spec':
+        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew':
             color = plt.get_cmap("tab10")(0)       # Default color is first color in tab10 colors (blue).
         else:
             color = None
 
     color_list = get_colors(df, cycles, color, color_scheme)     # Choose color maps from: https://matplotlib.org/examples/color/colormaps_reference.html
 
-    legend_color_list.append(color_list[round(len(color_list) / 2)])  # Sets color for legend to be middle color if multiple cycles.
+    try:
+        legend_color_type = kwargs['legend_color_type']
+    except:
+        legend_color_type = None
+
+    if legend_color_type == 'individual_cycles':
+        legend_color_list = color_list  # Sets color for legend to be each cycle that is plotted. Only one cell supported at the moment.
+    else:
+        legend_color_list.append(color_list[round(len(color_list) / 2)])  # Sets color for legend to be middle color if multiple cycles.
 
     return (pickle_name, df, cycles, color, color_list, legend_color_list)
 
@@ -253,7 +261,7 @@ def set_next_pickle (nr, **kwargs):
     try:
         kwargs['color'+str(nr - 1)] = kwargs['color'+str(nr)]
     except:
-        if kwargs['x1'] != 'cap_incr_spec':
+        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew':
             kwargs['color'+str(nr - 1)] = plt.get_cmap("tab10")(nr-1)
         else:
             kwargs['color'+str(nr - 1)] = None
