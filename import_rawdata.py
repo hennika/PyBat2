@@ -35,13 +35,15 @@ def import_biologic(data_url):                              # data_url is the lo
                 if line.find('mod') == 0 and line.find('ox/red'):
                     data.append(line.split("\t"))
                     evaluater = True
+                elif line.find('freq/Hz') == 0:
+                    data.append(line.split("\t"))
+                    evaluater = True
 
     file_input.close()
 
     df = pd.DataFrame(data[1:], columns=data[0][0:(len(data[0]))])  # Creates the dataframe, with column names from first row.
 
     return df, char_mass
-
 
 # Function for importing data from Lanhe
 def import_lanhe(data_url):

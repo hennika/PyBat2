@@ -57,6 +57,30 @@ def vmp3_cycling(df, char_mass):
 
     return df, char_mass
 
+def vmp3_impedance(df, char_mass):
+    # Seems like exported file can either contain <> or not, remove it anyway:
+    df.columns = df.columns.str.replace('<', '')
+    df.columns = df.columns.str.replace('>', '')
+
+    # Now columns are:
+    # freq/Hz', 'Re(Z)/Ohm', '-Im(Z)/Ohm', '|Z|/Ohm', 'Phase(Z)/deg', 'time/s', 'Ewe/V', 'I/mA', 'Cs/µF', 'Cp/µF', 'cycle number', 'I Range', '|Ewe|/V', '|I|/A', 'Ece/V', '|Ece|/V', 'Phase(Zce)/deg', '|Zce|/Ohm',
+    # 'Re(Zce)/Ohm', '-Im(Zce)/Ohm', 'Phase(Zwe-ce)/deg', '|Zwe-ce|/Ohm', 'Re(Zwe-ce)/Ohm', '-Im(Zwe-ce)/Ohm', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Unknown', 'Re(Y)/Ohm-1', 'Im(Y)/Ohm-1', '|Y|/Ohm-1', 'Phase(Y)/deg'
+
+    # Deletes unnecessary columns:
+    del df['Unknown']   # Deletets all "Unknown" columns.
+
+    # Renames to standard names:
+    df = df.rename(
+        columns={'freq/Hz':'freq', 'Re(Z)/Ohm':'Re_Z', '-Im(Z)/Ohm':'-Im_Z', '|Z|/Ohm':'|Z|', 'Phase(Z)/deg':'phase_Z',
+                 'time/s':'time', 'Ewe/V':'Ew', 'I/mA':'current', 'Cs/µF':'Cs', 'Cp/µF':'Cp', 'cycle number': 'cycle', 'I Range':'current_range',
+                 '|Ewe|/V':'|Ewe|', '|I|/A':'|I|', 'Ece/V':'Ece', '|Ece|/V':'|Ece|', 'Phase(Zce)/deg':'phase_Zce', '|Zce|/Ohm':'|Zce|',
+                 'Re(Zce)/Ohm':'Re_Zce', '-Im(Zce)/Ohm':'-Im_Zce', 'Phase(Zwe-ce)/deg':'phase_Zwe-ce', '|Zwe-ce|/Ohm':'|Zwe-ce|',
+                 'Re(Zwe-ce)/Ohm':'Re_Zwe-ce', '-Im(Zwe-ce)/Ohm':'-Im_Zwe-ce', 'Re(Y)/Ohm-1':'Re_Y', 'Im(Y)/Ohm-1':'Im_Y', '|Y|/Ohm-1':'|Y|', 'Phase(Y)/deg':'phase_Y'
+                 })
+    # Verifies characteristic mass from user:
+    char_mass = check_char_mass(char_mass)
+
+    return  df, char_mass
 
 def lanhe (df):
 

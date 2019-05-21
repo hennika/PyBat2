@@ -74,6 +74,9 @@ def auto_import(search_word, **kwargs):
             elif identifier == 'vmp3':
                 import_cell.vmp3(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from VMP3: ' + file_name + line.suffix)
+            elif identifier == 'impedance':
+                import_cell.vmp3(file_path, file_name, database.as_posix())
+                support.print_cool('green', 'Converted from VMP3: ' + file_name + line.suffix)
             elif identifier == 'lanhe':
                 import_cell.lanhe(file_path, file_name, database.as_posix())
                 support.print_cool('green', 'Converted from Lanhe: ' + file_name + line.suffix)
@@ -173,9 +176,9 @@ def auto_plot (search_word, **kwargs):
     except:
         legend_use = cell_names
 
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_loc, legend_color_list, custom_code, save_path = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, save_path = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
     pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
-    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list)       # Adds this pickle with specifications to plot
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize)       # Adds this pickle with specifications to plot
 
     for nr in range (2, len(cell_names)+1):
   #      try:
@@ -183,7 +186,7 @@ def auto_plot (search_word, **kwargs):
         next_pickle_response_nr = 'pickle' + str(nr)
         next_pickle_name,next_y, next_cycles, next_color, next_color_scheme = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
         pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=next_y, color1=next_color, color_scheme1=next_color_scheme)
-        plot_support.AddPickleToPlot(df, cycles, x1, next_y, color_list)
+        plot_support.AddPickleToPlot(df, cycles, x1, next_y, color_list, markersize)
 #        except:
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
 
@@ -199,6 +202,8 @@ def identify_file (suffix, file_path):
             for line in file_input:  # Reads the data from the data_url line by line.
                 if line.find('Ewe-Ece') != -1:  # -1 if not found, returns index if found
                     identifier = 'vmp3'
+                elif line.find('Re(Z)/Ohm') != -1:
+                    identifier = 'impedance'
         file_input.close()
         if identifier == None:      # If suffix is mpt, but not vmp3-file, should be biologic file.
             identifier = 'biologic'

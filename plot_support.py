@@ -29,8 +29,8 @@ def get_colors(df, cycles=None, color=None, color_scheme=None):
         last_cycle = df['cycle'].as_matrix().astype(int)[-1]  # Converts cycle column to int, and get last element (last cycle nr).
         cycles = range(0, last_cycle, 1)   # Creates list from 0 to last cycle, increment 1
 
-    color_min = 100  # Minimum color (if zero, first color is almost white).
-    color_max = 300  # Maximum color, 300 looks nice.
+    color_min = 70  # Minimum color (if zero, first color is almost white).
+    color_max = 270  # Maximum color, 300 looks nice.
     color_nr = color_min  # Color for each plot (used in loop below)
     try:
         color_iter = int(
@@ -96,6 +96,10 @@ def set_plot_specs(**kwargs):
     except:
         yticks = None
     try:
+        markersize = kwargs['markersize']
+    except:
+        markersize = 2
+    try:
         legend = kwargs['legend']
     except:
         try:
@@ -122,7 +126,7 @@ def set_plot_specs(**kwargs):
         except:
             save_path = None
 
-    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend, legend_loc, legend_color_list, custom_code, save_path)
+    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend, legend_loc, legend_color_list, custom_code, save_path)
 
 #-----------------------------------------------------------------------------------
 
@@ -228,11 +232,11 @@ def SavePlot(save_path): # Save high resolution by saving displayed plot as .eps
 #-----------------------------------------------------------------------------------
 
 
-def AddPickleToPlot (df, cycles, x1, y1, color_list):
+def AddPickleToPlot (df, cycles, x1, y1, color_list, markersize):
 
     for i in range(0, len(cycles)):     # OBS: When plotting capacity vs cycle, it will only iterate once (different type of "cycle variable")
         df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]   # Make new data frame for given cycle
-        plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=2, c=color_list[i])  # s = size
+        plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize, c=color_list[i])  # s = size
     return
 
 #-----------------------------------------------------------------------------------
@@ -306,5 +310,6 @@ def get_labels(x):  # Takes in variable as input and returns the corresponding s
         'Ew' : 'Ew (V)',
         'Ec' : 'Ec (V)',
         'Ew-Ec' : 'Ew-Ec (V)',
-
+        'Re_Z' : 'Re (Z)',
+        '-Im_Z': '-Im (Z)'
     }[x]

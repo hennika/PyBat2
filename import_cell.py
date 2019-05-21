@@ -34,6 +34,9 @@ def vmp3 (data_url, cell_key, database):
         df, char_mass = fix.vmp3_cycling(df, char_mass)
         df = add.specific_capacity_incremental(df, char_mass)
         df = add.specific_capacity_cycle(df, char_mass)
+    elif 'Re(Z)/Ohm' in df.columns:
+        print('Importing as VMP3 impedance file, specific capacity and cycles not added.\n')
+        df, char_mass = fix.vmp3_impedance(df, char_mass)
     else:
         print('Importing as VMP3 CV file, specific capacity not added.\n')
         df, char_mass = fix.vmp3_CV(df, char_mass)
