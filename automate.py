@@ -136,6 +136,54 @@ def merge_biologic(search_word, location):     #function takes a vector of dataf
 
     return print("\n No merge conducted")
 
+def merge_biologic2(search_word):     #function takes a vector of dataframes an merged them into one dataframe based on the "cycle_nr, charge_spec, discharge_spec, QE" format.
+
+    database = user_setup.database
+
+    all_files = support.find_files(search_word, database)  # Finds and returns files as list
+    support.print_files_nr(all_files)  # prints files with nr
+    #all_files = support.search_file(search_word, database)                                                        #Search for cells with the inputname in the given location
+
+    response = input("\n Do you want to merge these files? yes/no:   ")                                 #Response from user
+
+    if response.lower() == "yes":                                                                         #Starts mergning
+
+        df_list = []                                                                                      #List of dataframes to be merged.
+
+        for line in all_files:                                                                            #Creates a list of all dataframes to be merged.
+            df_list.append(access_data.access_cell_data(line.stem))
+
+        df_merged = pd.concat(df_list, axis=0)                                                            #Actual merging of dataframes.
+        df_merged = df_merged.ix[:,['cycle_nr', "charge_spec", "discharge_spec", 'QE']]                   #Desides which colums are to be merged.
+        df_merged = df_merged.dropna()                                                                    #Drop rows without input.
+
+        #df_merged['cycle_nr'] = range(1, df_merged.shape[0] + 1)                                          #Renumber the cycling_nr column to go from 1--> x.
+        df_merged['cycle_nr'] = range(1, len(df_merged.index)+1)
+        #df_merged.set_index([list(range(df_merged.shape[0]))], inplace=True)                              #Renumber the index of the dataframe to go from 1 --> x.
+        df_merged.set_index([list(range(len(df_merged.index)))], inplace=True)                              #Renumber the index of the dataframe to go from 1 --> x.
+
+        plt.scatter(df_merged['cycle_nr'], df_merged['discharge_spec'], s=10, color='deepskyblue')        #Plots result, so that the user can see if it is satisfying.
+        plt.show()
+
+        response = input("\n Would you like to store the new file? yes/no:   ")
+
+        if response.lower() == "yes":
+            response = input("\n Please write file name:  ")
+            df_merged.to_pickle(database.as_posix() + "/" + response)
+
+            print("\n Database saved as: ",  response + '.pkl')
+
+        else:
+            print("\n New dataframe not saved")
+
+        return df_merged
+
+    else:
+        print("\n Input invalid")
+
+    return print("\n No merge conducted")
+
+
 def auto_plot (search_word, **kwargs):
 
     import plot_support
@@ -176,9 +224,9 @@ def auto_plot (search_word, **kwargs):
     except:
         legend_use = cell_names
 
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, save_path = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
     pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
-    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize)       # Adds this pickle with specifications to plot
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize, custom_code_first)       # Adds this pickle with specifications to plot
 
     for nr in range (2, len(cell_names)+1):
   #      try:

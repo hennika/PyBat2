@@ -224,6 +224,10 @@ def incremental_charge_discharge_from_cap(df):
         if df['mode'][i] == 'R':    # If mode is 'R', add zero to discharge and charge variables
             discharge_incr.append(0)
             charge_incr.append(0)
+        else:
+            print('Not recognized Mode column variabel (', df['mode'][i],'), added zero for row: ', i)
+            discharge_incr.append(0)
+            charge_incr.append(0)
 
     df['discharge_incr'], df['charge_incr'] = [discharge_incr, charge_incr] # Add them as new columns to dataframe.
 

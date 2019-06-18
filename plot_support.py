@@ -118,6 +118,10 @@ def set_plot_specs(**kwargs):
     except:
         custom_code = None
     try:
+        custom_code_first = kwargs['custom_code_first']
+    except:
+        custom_code_first = None
+    try:
         save_path = kwargs['save_path']
     except:
         try:
@@ -126,7 +130,7 @@ def set_plot_specs(**kwargs):
         except:
             save_path = None
 
-    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend, legend_loc, legend_color_list, custom_code, save_path)
+    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend, legend_loc, legend_color_list, custom_code, custom_code_first, save_path)
 
 #-----------------------------------------------------------------------------------
 
@@ -232,10 +236,11 @@ def SavePlot(save_path): # Save high resolution by saving displayed plot as .eps
 #-----------------------------------------------------------------------------------
 
 
-def AddPickleToPlot (df, cycles, x1, y1, color_list, markersize):
+def AddPickleToPlot (df, cycles, x1, y1, color_list, markersize, custom_code_first=None):
 
     for i in range(0, len(cycles)):     # OBS: When plotting capacity vs cycle, it will only iterate once (different type of "cycle variable")
         df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]   # Make new data frame for given cycle
+        add_custom(custom_code_first)  # Executes string in custom_code_first as code. Used if custom code must be executed before plotting. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
         plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize, c=color_list[i])  # s = size
     return
 

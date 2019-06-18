@@ -10,10 +10,10 @@ import plot_support
 # - If no more pickles, add labels etc and show plot.
 
 def plotter(**kwargs):
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, save_path = plot_support.set_plot_specs(**kwargs) # Sets specifications for plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path = plot_support.set_plot_specs(**kwargs) # Sets specifications for plot
     pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, **kwargs) # Sets specifications for first pickle
 
-    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize)       # Adds this pickle with specifications to plot
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize, custom_code_first)       # Adds this pickle with specifications to plot
 
     for nr in range (2, 50):        # Does the same for rest of the wanted pickles (here up to 50).
         try:                        # Attempts to read next pickle. If found, will set specifications and add pickle to plot as above.
