@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt   # Plottepakke
 import access_data
 import pandas as pd
 
-
 def automatic_conversion(search_word, location, cell_database):                                             #Automatically converts search for mpt (biolofic) or txt (lanhe) files to pandas. Able to handle multiple files.
 
     all_files = support.search_file(search_word, location)                                                        #Search for cells with a spesific name in a given location.
@@ -224,7 +223,7 @@ def auto_plot (search_word, **kwargs):
     except:
         legend_use = cell_names
 
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
     pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
     plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize, custom_code_first)       # Adds this pickle with specifications to plot
 
@@ -239,7 +238,7 @@ def auto_plot (search_word, **kwargs):
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
 
     plot_support.plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list,
-                           legend_loc, custom_code, save_path)  # Add labels and legend, and shows plot
+                           legend_loc, custom_code, save_path_png, save_path_tiff)  # Add labels and legend, and shows plot
 
     return
 
@@ -249,6 +248,8 @@ def identify_file (suffix, file_path):
         with open(file_path, 'r') as file_input:
             for line in file_input:  # Reads the data from the data_url line by line.
                 if line.find('Ewe-Ece') != -1:  # -1 if not found, returns index if found
+                    identifier = 'vmp3'
+                elif line.find('Cyclic Voltammetry')!= -1:
                     identifier = 'vmp3'
                 elif line.find('Re(Z)/Ohm') != -1:
                     identifier = 'impedance'
@@ -261,3 +262,70 @@ def identify_file (suffix, file_path):
         identifier = 'maccor'
 
     return identifier
+
+def change_cycle_def (search_word): # Rewrites cycle column according to first instance of discharge or charge
+    import add_to_rawdata
+
+    database = user_setup.database
+    all_files = support.find_files(search_word, database)  # Finds and returns files as list
+    support.print_files_nr(all_files)  # prints files with nr
+
+    response = support.input_cool('yellow',"Which file do you want to change the cycle definition? Write nr:   ")  # Response from user
+    file = all_files[int(response)]
+    df_change = access_data.access_cell_data(file.stem)
+
+    df_change = add_to_rawdata.add_cycle_incr(df_change)
+
+    response2 = support.input_cool('yellow',"Overwrite existing file? (no/any):   ")  # Response from user
+    if response2.lower() == 'no':
+        new_name = support.input_cool('yellow','Write new cell name:   ')
+        df_change.to_pickle(database.as_posix() + "/" + new_name)
+        support.print_cool('green', new_name + ' saved to database.')
+    else:
+        df_change.to_pickle(database.as_posix() + "/" + file.stem)
+        support.print_cool('green', 'Updated pickle saved to database.')
+
+    return
+
+def add_column (search_word, operation, new_variable_name=None, from_variable=None, scalar=None): # Add column with relation from excisting columns
+
+    database = user_setup.database
+    all_files = support.find_files(search_word, database)  # Finds and returns files as list
+    support.print_files_nr(all_files)  # prints files with nr
+
+    response = input("\n Which files do you want to add column to? Write nr separated with + here:   ")  # Response from user
+    c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
+    for i in range(0, len(c_response)):  # Loop through all cells to plot.
+        file = all_files[int(c_response[i])]
+        df_add = access_data.access_cell_as_string(file.stem)
+
+        if operation == 'multiply_scalar':
+            df_add = multiply_scalar(df_add, new_variable_name, from_variable, scalar)
+            df_add.to_pickle(database.as_posix() + "/" + file.stem)
+            support.print_cool('green', 'New column added and saved')
+        elif operation == 'CL+CCL':
+            df_add = CCL(df_add)
+            df_add.to_pickle(database.as_posix() + "/" + file.stem)
+            support.print_cool('green', 'New column added and saved')
+        else:
+            support.print_cool('yellow','No columns added')
+
+    return
+
+def multiply_scalar(df, new_variable_name, from_variable, scalar):
+    #df[new_variable_name] = df[from_variable].mul(scalar)
+    df[new_variable_name] = [i * scalar for i in support.str_to_float(df[from_variable].tolist())]  # Multiplying each element in list that contains float numbers of column in df.
+    return df
+
+def CCL (df):
+    CL = []
+    CCL = []
+    for i in range(0, len(df['discharge_spec'])):
+        if i == 0:
+            CL.append(float(df['charge_spec'][i]) - float(df['discharge_spec'][i]))
+            CCL.append(CL[i])
+        else:
+            CL.append(float(df['charge_spec'][i]) - float(df['discharge_spec'][i]))
+            CCL.append(CCL[i-1]+CL[i])
+    df['CL'], df['CCL'] = CL, CCL
+    return df

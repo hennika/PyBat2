@@ -10,7 +10,7 @@ import plot_support
 # - If no more pickles, add labels etc and show plot.
 
 def plotter(**kwargs):
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path = plot_support.set_plot_specs(**kwargs) # Sets specifications for plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff = plot_support.set_plot_specs(**kwargs) # Sets specifications for plot
     pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, **kwargs) # Sets specifications for first pickle
 
     plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize, custom_code_first)       # Adds this pickle with specifications to plot
@@ -23,7 +23,7 @@ def plotter(**kwargs):
         except:
             continue # Script moves to next iteration, checking for yet another pickle.
 
-    plot_support.plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path) # Add labels and legend, and shows plot
+    plot_support.plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path_png, save_path_tiff) # Add labels and legend, and shows plot
 
     return
 

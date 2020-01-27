@@ -6,6 +6,8 @@ import matplotlib.patches as mpatches # Legend in plot
 import sys                        # For aborting scripts
 import math                       # For floor
 import user_setup
+from PIL import Image             # For saving as TIFF
+from io import BytesIO            # For saving as TIFF
 
 #-----------------------------------------------------------------------------------
 ########       Function for making list of color codes
@@ -15,22 +17,26 @@ import user_setup
 def get_colors(df, cycles=None, color=None, color_scheme=None):
     color_list = []     # This will be the return variable containing all colors to be plotted.
 
-    if color!=None:     # If single color is specified, color list will be a list of the same color for every cycle.
+    if color is not None:     # If single color is specified, color list will be a list of the same color for every cycle.
         for i in range(0, len(cycles)):
             color_list.append(color)
         return color_list
 
     # If color is qualitative, will use tab10 as default: https://matplotlib.org/examples/color/colormaps_reference.html
     if color_scheme == 'Qualitative':
-        color_list = plt.cm.tab10(np.linspace(0, 1, len(cycles)))
+        try:
+            color_list = user_setup.colors_qual
+            #color_list = eval('plt.cm.'+user_setup.colors_qual+'(range(0,8,1))') # Qualitative colors set by user (up to 8 colors).
+        except:
+            color_list = plt.cm.tab10(np.linspace(0, 1, 10))
         return color_list
 
     if (cycles==None):        # If no cycles are defined, will plot all cycles
         last_cycle = df['cycle'].as_matrix().astype(int)[-1]  # Converts cycle column to int, and get last element (last cycle nr).
         cycles = range(0, last_cycle, 1)   # Creates list from 0 to last cycle, increment 1
 
-    color_min = 70  # Minimum color (if zero, first color is almost white).
-    color_max = 270  # Maximum color, 300 looks nice.
+    color_min = 90  # Minimum color (if zero, first color is almost white).
+    color_max = 290  # Maximum color, 300 looks nice.
     color_nr = color_min  # Color for each plot (used in loop below)
     try:
         color_iter = int(
@@ -122,15 +128,21 @@ def set_plot_specs(**kwargs):
     except:
         custom_code_first = None
     try:
-        save_path = kwargs['save_path']
+        save_path_png = kwargs['save_path']
     except:
         try:
-            save_name = kwargs['save_as']
-            save_path = str(user_setup.plots) + '\\' + save_name
+            save_path_png = str(user_setup.plots) + '\\' + kwargs['save_as']
         except:
-            save_path = None
+            save_path_png = None
+    try:
+        save_path_tiff = kwargs['save_path']
+    except:
+        try:
+            save_path_tiff = str(user_setup.plots) + '\\' + kwargs['save_as_tiff']
+        except:
+            save_path_tiff = None
 
-    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend, legend_loc, legend_color_list, custom_code, custom_code_first, save_path)
+    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff)
 
 #-----------------------------------------------------------------------------------
 
@@ -155,7 +167,10 @@ def set_pickle_specs (legend_color_list, **kwargs):
         color = kwargs['color1']
     except:
         if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew':
-            color = plt.get_cmap("tab10")(0)       # Default color is first color in tab10 colors (blue).
+            try:
+                color = user_setup.colors_qual[0]     # Default color is first color in user defined colors.
+            except:
+                color = plt.get_cmap("tab10")(0)       # Default color is first color in tab10 colors (blue).
         else:
             color = None
 
@@ -229,12 +244,17 @@ def add_custom (custom_code):    # Executes string in custom_code as code. Multi
             print('Not recognisable custom code. Needs to be one string, where multiple lines are separated by \\n.')
     return
 #-----------------------------------------------------------------------------------
-def SavePlot(save_path): # Save high resolution by saving displayed plot as .eps and use that in latex, or as png by using save_path variable
-    if save_path!=None:  # Saves plot as png, if save_path variable is used.
-        plt.savefig((save_path+'.png'), format='png', dpi=1000)     # > 300 DPI is recommended by NTNU in master theses.
+def SavePlot(save_path_png, save_path_tiff): # Save high resolution by saving displayed plot as .eps and use that in latex, or as png by using save_path variable
+    if save_path_png!=None:  # Saves plot as png, if save_path variable is used.
+        plt.savefig((save_path_png+'.png'), format='png', dpi=1000)     # > 300 DPI is recommended by NTNU in master theses.
+    if save_path_tiff!=None:  # Saves plot as tiff, if save_path variable is used.
+        png1 = BytesIO()      # from https://stackoverflow.com/questions/37945495/python-matplotlib-save-as-tiff
+        plt.savefig(png1, format='png', dpi=600) # first save as png
+        png2 = Image.open(png1) # load this image into PIL
+        png2.save((save_path_tiff + '.tiff'))  # save as TIFF
+        png1.close()
     return
 #-----------------------------------------------------------------------------------
-
 
 def AddPickleToPlot (df, cycles, x1, y1, color_list, markersize, custom_code_first=None):
 
@@ -278,7 +298,7 @@ def set_next_pickle (nr, **kwargs):
     return (kwargs['pickle'+str(nr-1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
 
 #-----------------------------------------------------------------------------------
-def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path):
+def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path_png, save_path_tiff):
 
     add_limits(xlim, ylim) # Changes x and y limits (min, max), if specified.
     add_ticks(xticks, yticks) # Changes x and y ticks (min, max), if specified.
@@ -286,7 +306,7 @@ def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, l
     add_legend(legend_list, legend_color_list, legend_loc) # Adding legend(s) to plot.
     add_custom(custom_code) # Executes string in custom_code as code. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
 
-    SavePlot(save_path) # Save high resolution by saving displayed plot as .eps and use that in latex, or as png by using save_path variable
+    SavePlot(save_path_png, save_path_tiff) # Save high resolution by saving displayed plot as .eps and use that in latex, or as png by using save_path variable
 
     plt.show()
 
@@ -295,6 +315,7 @@ def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, l
 def get_labels(x):  # Takes in variable as input and returns the corresponding string
     return {
         'time': 'Time (s)',
+        'time_hour' : 'Time (h)',
         'potential': 'Potential (V)',
         'potential_diff_cap': 'Potential (V)',
         'energy_char': 'Charge energy (Wh)',
@@ -302,6 +323,7 @@ def get_labels(x):  # Takes in variable as input and returns the corresponding s
         'capacitance_char': 'Charge capacitance (F)',
         'capacitance_dis': 'Discharge capacitance (F)',
         'current': 'Current (mA)',
+        'current_uA': 'Current ($\mu$A)',
         'charge_incr': 'Charge capacity (mAh)',
         'discharge_incr': 'Discharge capacity (mAh)',
         'cap_incr': 'Capacity (mAh)',
@@ -314,6 +336,7 @@ def get_labels(x):  # Takes in variable as input and returns the corresponding s
         'charge_spec': 'Charge capacity (mAh/g)',
         'Ew' : 'Ew (V)',
         'Ec' : 'Ec (V)',
+        'Ec_inv' : 'Ec (V)',
         'Ew-Ec' : 'Ew-Ec (V)',
         'Re_Z' : 'Re (Z)',
         '-Im_Z': '-Im (Z)'
