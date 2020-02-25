@@ -223,22 +223,146 @@ def auto_plot (search_word, **kwargs):
     except:
         legend_use = cell_names
 
-    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
+    x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, type, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
     pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
-    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, markersize, custom_code_first)       # Adds this pickle with specifications to plot
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, type, markersize, custom_code_first)       # Adds this pickle with specifications to plot
 
     for nr in range (2, len(cell_names)+1):
   #      try:
         next_pickle_response = cell_paths[nr-1]   # Looks up index in files given by the next cell in the response
         next_pickle_response_nr = 'pickle' + str(nr)
-        next_pickle_name,next_y, next_cycles, next_color, next_color_scheme = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
-        pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=x1, y1=next_y, color1=next_color, color_scheme1=next_color_scheme)
-        plot_support.AddPickleToPlot(df, cycles, x1, next_y, color_list, markersize)
+        next_pickle_name,next_x, next_y, next_cycles, next_color, next_color_scheme = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
+        pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=next_x, y1=next_y, color1=next_color, color_scheme1=next_color_scheme)
+        plot_support.AddPickleToPlot(df, cycles, next_x, next_y, color_list, type, markersize)
 #        except:
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
 
     plot_support.plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list,
                            legend_loc, custom_code, save_path_png, save_path_tiff)  # Add labels and legend, and shows plot
+
+    return
+
+def batch_plot (search_word, **kwargs):
+
+    import plot_support
+    plots_folder = user_setup.plots
+    database = user_setup.database
+    colors_qual = user_setup.colors_qual
+
+    # Identifying cells to plot
+    cell_names = []  # Initiates list for cells that will be plotted.
+    cell_paths = []  # Initiates list for paths to cells to be plotted.
+    finished = False    # Determines if user is finished with input
+    while finished == False:
+        files = support.find_files(search_word, database)  # Finds and returns files as list
+        if len(files) == 1:
+            support.print_cool ('green',"Found only one file, using this.")
+            cell_names.append(files[0].stem)  # Saves the cell name (.stem returns last path-element)
+            cell_paths.append(str(files[0]))  # Saves the full path to the cell
+            finished = True
+            continue
+        support.print_files_nr(files)  # prints files with nr
+        response = support.input_cool('yellow', 'Which of these cells do you want to plot? Write corresponding numbers, separated with "+" (Ex: 0+2+3):  ')
+        c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
+        for i in range (0, len(c_response)):  # Loop through all cells to plot.
+            cell_names.append((files[int(c_response[i])]).stem)  # Saves the cell name (.stem returns last path-element)
+            cell_paths.append(str(files[int(c_response[i])]))    # Saves the full path to the cell
+
+        response2 = support.input_cool('yellow', 'Search for more cells? (yes/any):   ')
+        if response2 == 'yes':
+            search_word = support.input_cool('yellow', 'Write new search word:   ')
+        else:
+            finished = True
+
+    for nr in range (0, len(cell_names)):
+        list = access_data.columns(cell_paths[nr], ['cycle_nr', 'discharge_spec', 'charge_spec', 'cap_incr_spec', 'potential', 'cycle'])
+        df = access_data.access_cell_as_string(cell_names[nr])
+        cycles, discharge, charge, capacity_incr, potential, cycle_incr = list[0][0], list[1][0], list[2][0], list[3][0], list[4][0], list[5][0]
+        CE = [float(ai)/bi*100 for ai,bi in zip(discharge,charge)]  # Obtaining Coulombic efficiencies
+
+        fontsize = 10
+        fig, axs = plt.subplots(3,2, figsize=(7,7))
+        """     Capacity vs cycle nr    """
+        axs[0,0].scatter(cycles, discharge, color=colors_qual[0])
+        axs[0,0].scatter(cycles, charge, marker='D', color=colors_qual[1])
+        axs[0,0].set_xlabel('Cycle number', size=fontsize)
+        axs[0,0].set_ylabel('Capacity (mAh/g)', size=fontsize)
+        axs[0,0].tick_params(axis='both', which='major', labelsize=fontsize) # Setting ticks size equally enlarged to fontsize
+        axs[0,0].tick_params(direction='in')     # Ticks pointing inwards.
+        axs[0,0].legend(['Discharge', 'Charge'], prop={'size': fontsize})
+        #plt.savefig((str('C:\\Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Plots\MP1H') + '\\' + 'MP1H_D1_16_100-250mA_capacity-cycle-nr' + '.png'),format='png', dpi=1000)  # > 300 DPI is recommended by NTNU in master theses.
+        """     Coulombic efficiency    """
+        axs[0,1].scatter(cycles, CE, color=colors_qual[0])
+        axs[0,1].set_xlabel('Cycle number', size=fontsize)
+        axs[0,1].set_ylabel('Coulombic efficiency (%)', size=fontsize)
+        axs[0,1].tick_params(axis='both', which='major',labelsize=fontsize)  # Setting ticks size equally enlarged to fontsize
+        axs[0,1].tick_params(direction='in')  # Ticks pointing inwards.
+        axs[0,1].legend(['C.E.'], prop={'size': fontsize})
+        # plt.savefig((str('C:\\Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Plots\MP1H') + '\\' + 'MP1H_D1_16_100-250mA_capacity-cycle-nr' + '.png'),format='png', dpi=1000)  # > 300 DPI is recommended by NTNU in master theses.
+        """     Voltage profiles (all)    """
+        color_list = plot_support.get_colors(cycle_incr, color_scheme='Blues')
+        last_cycle = df['cycle'].as_matrix().astype(int)[-1]  # Converts cycle column to int, and get last element (last cycle nr).
+        cycles = range(0,last_cycle,1)  # Makes variable with cycles to plot (all)
+        for i in range (0, last_cycle,1):  # Iterates through all cycles
+                df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]  # Make new data frame for given cycle
+                axs[1, 0].scatter(df_cycle_x['cap_incr_spec'].astype(float), df_cycle_x['potential'].astype(float), s=1, c=color_list[i])
+        axs[1,0].set_xlabel('Capacity (mAh/g)', size=fontsize)
+        axs[1,0].set_ylabel('Voltage', size=fontsize)
+        axs[1,0].tick_params(axis='both', which='major',labelsize=fontsize)  # Setting ticks size equally enlarged to fontsize
+        axs[1,0].tick_params(direction='in')  # Ticks pointing inwards.
+        axs[1,0].legend(['All cycles'], prop={'size': fontsize})
+        #axs[1,0].legend(['Voltage profile'], prop={'size': fontsize})
+        # plt.savefig((str('C:\\Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Plots\MP1H') + '\\' + 'MP1H_D1_16_100-250mA_capacity-cycle-nr' + '.png'),format='png', dpi=1000)  # > 300 DPI is recommended by NTNU in master theses.
+        """     Voltage profiles (selected)    """
+        cycles = [1,2,10,50,100] # Makes variable with cycles to plot
+        color_list = plot_support.get_colors(cycle_incr, cycles=cycles, color_scheme='Qualitative')
+        for i in range(0, len(cycles), 1):  # Iterates through all cycles
+            df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]  # Make new data frame for given cycle
+            axs[1, 1].scatter(df_cycle_x['cap_incr_spec'].astype(float), df_cycle_x['potential'].astype(float), s=1,
+                              c=color_list[i], label='%s' %cycles[i])
+        axs[1, 1].set_xlabel('Capacity (mAh/g)', size=fontsize)
+        axs[1, 1].set_ylabel('Voltage', size=fontsize)
+        axs[1, 1].tick_params(axis='both', which='major',
+                              labelsize=fontsize)  # Setting ticks size equally enlarged to fontsize
+        axs[1, 1].tick_params(direction='in')  # Ticks pointing inwards.
+        axs[1, 1].legend(prop={'size': fontsize})
+        # plt.savefig((str('C:\\Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Plots\MP1H') + '\\' + 'MP1H_D1_16_100-250mA_capacity-cycle-nr' + '.png'),format='png', dpi=1000)  # > 300 DPI is recommended by NTNU in master theses.
+
+        """     Differential capacity (selected cycles)    """
+        cycles = [1, 2, 10, 50, 100]  # Makes variable with cycles to plot
+        color_list = plot_support.get_colors(cycle_incr, cycles=cycles, color_scheme='Qualitative')
+        for i in range(0, len(cycles), 1):  # Iterates through all cycles
+            df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]  # Make new data frame for given cycle
+            axs[2, 0].scatter(df_cycle_x['potential_diff_cap'].astype(float), df_cycle_x['diff_cap'].astype(float), s=1,
+                              c=color_list[i], label='%s' % cycles[i])
+        axs[2, 0].set_xlabel('Potential (V)', size=fontsize)
+        axs[2, 0].set_ylabel('Diff. capacity (mAh/g/V)', size=fontsize)
+        axs[2, 0].tick_params(axis='both', which='major',
+                              labelsize=fontsize)  # Setting ticks size equally enlarged to fontsize
+        axs[2, 0].tick_params(direction='in')  # Ticks pointing inwards.
+        axs[2, 0].legend(prop={'size': fontsize})
+        # plt.savefig((str('C:\\Users\hennika\OneDrive - NTNU\PhD\Results\Cycling\Plots\MP1H') + '\\' + 'MP1H_D1_16_100-250mA_capacity-cycle-nr' + '.png'),format='png', dpi=1000)  # > 300 DPI is recommended by NTNU in master theses.
+
+        """     Add more here   """
+        axs[2, 1].text(0.35,0.5, 'Awesome!')
+
+        fig.tight_layout()  # Makes sure everything is within figure
+
+        """     Saving figures      """
+        from pathlib import Path
+        Path(str(plots_folder)+'\\'+cell_names[nr]).mkdir(parents=True, exist_ok=True)   # Make new folder for cell if it doesn't exist already
+        resolution = 500
+
+        extent = axs[0, 0].get_window_extent().transformed(fig.dpi_scale_trans.inverted())  # Collecting subplot to save
+        fig.savefig(str(plots_folder) + '\\' + cell_names[nr] + '\\' + 'capacity_vs_cycles.png',
+                    dpi=resolution, bbox_inches=extent.expanded(1.45, 1.5))  # Saving subplot
+
+        extent = axs[1, 1].get_window_extent().transformed(fig.dpi_scale_trans.inverted())  # Collecting subplot to save
+        fig.savefig(str(plots_folder)+'\\'+cell_names[nr]+'\\'+'Voltage_profiles_cycle_1-2-10-50-100.png',dpi=resolution, bbox_inches=extent.expanded(1.4, 1.42))   # Saving subplot
+
+        plt.show()
+
+
 
     return
 

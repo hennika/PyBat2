@@ -15,8 +15,13 @@ from io import BytesIO            # For saving as TIFF
 ## Returns vector of colors to be used in plot
 
 def get_colors(df, cycles=None, color=None, color_scheme=None):
-    color_list = []     # This will be the return variable containing all colors to be plotted.
 
+    if not isinstance(df, pd.DataFrame):    # If df is not dataframe, assumes df is list
+        new_df = pd.DataFrame()
+        new_df['cycle'] = df
+        df = new_df
+
+    color_list = []     # This will be the return variable containing all colors to be plotted.
     if color is not None:     # If single color is specified, color list will be a list of the same color for every cycle.
         for i in range(0, len(cycles)):
             color_list.append(color)
@@ -102,6 +107,10 @@ def set_plot_specs(**kwargs):
     except:
         yticks = None
     try:
+            type = kwargs['type']
+    except:
+            type = 'scatter'
+    try:
         markersize = kwargs['markersize']
     except:
         markersize = 2
@@ -142,7 +151,7 @@ def set_plot_specs(**kwargs):
         except:
             save_path_tiff = None
 
-    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, markersize, legend, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff)
+    return (x1,y1, xlabel, ylabel, xlim, ylim, xticks, yticks, type, markersize, legend, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff)
 
 #-----------------------------------------------------------------------------------
 
@@ -166,7 +175,7 @@ def set_pickle_specs (legend_color_list, **kwargs):
     try:
         color = kwargs['color1']
     except:
-        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew':
+        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew' and kwargs['x1'] !='discharge_incr_spec' and kwargs['x1'] !='charge_incr_spec' and kwargs['x1']!='potential_diff_cap':
             try:
                 color = user_setup.colors_qual[0]     # Default color is first color in user defined colors.
             except:
@@ -256,12 +265,23 @@ def SavePlot(save_path_png, save_path_tiff): # Save high resolution by saving di
     return
 #-----------------------------------------------------------------------------------
 
-def AddPickleToPlot (df, cycles, x1, y1, color_list, markersize, custom_code_first=None):
+def AddPickleToPlot (df, cycles, x1, y1, color_list, type, markersize, custom_code_first=None):
 
     for i in range(0, len(cycles)):     # OBS: When plotting capacity vs cycle, it will only iterate once (different type of "cycle variable")
         df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]   # Make new data frame for given cycle
         add_custom(custom_code_first)  # Executes string in custom_code_first as code. Used if custom code must be executed before plotting. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
-        plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize, c=color_list[i])  # s = size
+
+        if type == 'scatter':
+            plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize, c=np.array(color_list[i]))  # s = size
+        elif type == 'line':
+            x_mask = np.isfinite(df_cycle_x[x1].astype(float))
+            y_mask = np.isfinite(df_cycle_x[y1].astype(float))
+            plt.plot(df_cycle_x[x1].astype(float)[x_mask], df_cycle_x[y1].astype(float)[y_mask], c=np.array(color_list[i]))
+            #plt.plot(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), c=np.array(color_list[i]))
+        else:
+            print('Type variable might be wrong, plotting as scatter plot')
+            plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize,
+                        c=np.array(color_list[i]))  # s = size
     return
 
 #-----------------------------------------------------------------------------------
@@ -275,6 +295,10 @@ def set_next_pickle (nr, **kwargs):
             kwargs['pickle' + str(nr - 1)] = kwargs['override']
         except:
           sys.exit(0)
+    try:
+        kwargs['x' + str(nr - 1)] = kwargs['x' + str(nr)]  # Looks for x2 etc, will be plotted on same axis as before.
+    except:
+        kwargs['x' + str(nr - 1)] = kwargs['x1']
     try:
         kwargs['y' + str(nr - 1)] = kwargs['y' + str(nr)]   # Looks for y2 etc, will be plotted on same axis as before.
     except:
@@ -290,12 +314,12 @@ def set_next_pickle (nr, **kwargs):
     try:
         kwargs['color'+str(nr - 1)] = kwargs['color'+str(nr)]
     except:
-        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew':
+        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew' and kwargs['x1'] != 'charge_incr_spec' and kwargs['x1']!='discharge_incr_spec':
             kwargs['color'+str(nr - 1)] = plt.get_cmap("tab10")(nr-1)
         else:
             kwargs['color'+str(nr - 1)] = None
 
-    return (kwargs['pickle'+str(nr-1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
+    return (kwargs['pickle'+str(nr-1)],kwargs['x' + str(nr - 1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
 
 #-----------------------------------------------------------------------------------
 def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path_png, save_path_tiff):
