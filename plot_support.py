@@ -272,7 +272,10 @@ def AddPickleToPlot (df, cycles, x1, y1, color_list, type, markersize, custom_co
         add_custom(custom_code_first)  # Executes string in custom_code_first as code. Used if custom code must be executed before plotting. Multiple lines separated by \n. Ex: custom_code='plt.text(50,1,\'Awesome\') \nplt.text(100,1,\'Awesomer\')'
 
         if type == 'scatter':
-            plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize, c=np.array(color_list[i]))  # s = size
+            try:
+                plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize, c=np.array(color_list[i]))  # s = size
+            except:
+                plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize,c=color_list[i])  # s = size
         elif type == 'line':
             x_mask = np.isfinite(df_cycle_x[x1].astype(float))
             y_mask = np.isfinite(df_cycle_x[y1].astype(float))
@@ -352,8 +355,11 @@ def get_labels(x):  # Takes in variable as input and returns the corresponding s
         'discharge_incr': 'Discharge capacity (mAh)',
         'cap_incr': 'Capacity (mAh)',
         'discharge_incr_spec': 'Discharge capacity (mAh/g)',
+        'discharge_incr_spec_nonzero': 'Discharge capacity (mAh/g)',
         'charge_incr_spec': 'Charge capacity (mAh/g)',
+        'charge_incr_spec_nonzero': 'Charge capacity (mAh/g)',
         'cap_incr_spec': 'Capacity (mAh/g)',
+        'cap_incr_spec_nonzero': 'Capacity (mAh/g)',
         'diff_cap': 'Differential capacity (mAh/g/V)',
         'cycle_nr': 'Cycles',
         'discharge_spec': 'Discharge capacity (mAh/g)',

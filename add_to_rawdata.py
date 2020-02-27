@@ -56,18 +56,23 @@ def specific_capacity_incremental(df, char_mass):
 
     discharge_incr_float = support.str_to_float(df['discharge_incr'].tolist())  # Extracting incremental discharge as float
     discharge_incr_spec = np.divide(discharge_incr_float,float(char_mass) / 1000)  # Divide by mass in grams to obtain specific capacity.
-    discharge_incr_spec[discharge_incr_spec == 0] = 'nan'
 
     charge_incr_float = support.str_to_float(df['charge_incr'].tolist())  # Extracting incremental discharge as float
     charge_incr_spec = np.divide(charge_incr_float,float(char_mass) / 1000)  # Divide by mass in grams to obtain specific capacity.
-    charge_incr_spec[charge_incr_spec == 0] = 'nan'
 
     cap_incr_float = support.str_to_float(df['cap_incr'].tolist())  # Extracting incremental discharge as float
     cap_incr_spec = np.divide(cap_incr_float,float(char_mass) / 1000)  # Divide by mass in grams to obtain specific capacity.
-    cap_incr_spec[cap_incr_spec == 0] = 'nan'
+
+    # Adding new columns where zero is replaced by Nan, for line plotting
+    discharge_incr_spec_nonzero = discharge_incr_spec.copy()
+    charge_incr_spec_nonzero = charge_incr_spec.copy()
+    cap_incr_spec_nonzero = cap_incr_spec.copy()
+    discharge_incr_spec_nonzero[discharge_incr_spec_nonzero== 0] = 'nan'
+    charge_incr_spec_nonzero[charge_incr_spec_nonzero== 0] = 'nan'
+    cap_incr_spec_nonzero[cap_incr_spec_nonzero == 0] = 'nan'
 
     df['discharge_incr_spec'], df['charge_incr_spec'], df['cap_incr_spec'] = [discharge_incr_spec, charge_incr_spec, cap_incr_spec]  # Add them as new columns.
-
+    df ['discharge_incr_spec_nonzero'], df['charge_incr_spec_nonzero'], df['cap_incr_spec_nonzero'] = [discharge_incr_spec_nonzero, charge_incr_spec_nonzero, cap_incr_spec_nonzero]
     return df
 
 
@@ -155,6 +160,8 @@ def diffcap (df):
         if (cap[it + 1] - cap[it]) < 0:  # If this is true, we are changing charging to discharge/vice versa
             diff_cap.append(None)         # Adds empty value in row instead of weird value, so the df['cycle'] can be used in plotting later
             volt_corr.append(None)
+            dE_temp = 0  # emptying temporary variable
+            dQ_temp = 0  # emptying temporary variable
         else:
             dQ_temp = dQ_temp + (cap[it+1] - cap[it])
             dE_temp = dE_temp + (volt[it+1] - volt[it])
