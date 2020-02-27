@@ -145,7 +145,7 @@ def diffcap (df):
     # print ('Maximum incremental voltage difference appears to be', max_volt_diff)
 
     volt = df['potential'].astype(float)  # Converts potential values to float.
-    cap = df['cap_incr_spec']             # Copies cap_incr_spec to new variable for easier code reading.
+    cap = df['cap_incr_spec'].astype(float)             # Copies cap_incr_spec to new variable for easier code reading.
 
     dQ = []         # Capacity difference between two measurements
     dE = []         # Voltage difference between two measurements
@@ -255,5 +255,24 @@ def inverted_potential (df):
         Ec_inv.append(float(df['Ec'][i])*(-1))  # Inverting potential by multiplying with -1
 
     df['Ec_inv'] = Ec_inv
+
+    return df
+
+def change_specific_capacity_incremental_no_OCV (df):
+    discharge_incr_spec = []
+    charge_incr_spec = []
+    cap_incr_spec = []
+
+    for i in range(0, len(df['potential'])):
+        if df['current'][i] == '0.000000000000000E+000':
+            discharge_incr_spec.append('nan')
+            charge_incr_spec.append('nan')
+            cap_incr_spec.append('nan')
+        else:
+            discharge_incr_spec.append(df['discharge_incr_spec'][i])
+            charge_incr_spec.append(df['charge_incr_spec'][i])
+            cap_incr_spec.append(df['cap_incr_spec'][i])
+
+    df['discharge_incr_spec'], df['charge_incr_spec'], df['cap_incr_spec'] = discharge_incr_spec, charge_incr_spec, cap_incr_spec
 
     return df

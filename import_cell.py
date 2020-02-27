@@ -18,6 +18,7 @@ def biologic(data_url, cell_key, database):
 
     # Add wanted columns to raw data:
     df = add.specific_capacity_incremental(df, char_mass)
+    df = add.change_specific_capacity_incremental_no_OCV(df)
     df = add.specific_capacity_cycle(df, char_mass)
     df = add.diffcap(df)
     df = add.cell_info(df, char_mass, cell_key)
