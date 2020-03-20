@@ -209,7 +209,7 @@ def set_pickle_specs (legend_color_list, **kwargs):
     try:
         color = kwargs['color1']
     except:
-        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew' and kwargs['x1'] !='discharge_incr_spec' and kwargs['x1'] !='charge_incr_spec' and kwargs['x1']!='potential_diff_cap':
+        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew' and kwargs['x1'] !='discharge_incr_spec' and kwargs['x1'] !='charge_incr_spec' and kwargs['x1']!='potential_diff_cap'and kwargs['x1']!='cap_incr_spec_nonzero' and kwargs['x1']!='charge_incr_spec_nonzero' and kwargs['x1']!='discharge_incr_spec_nonzero':
             try:
                 color = user_setup.colors_qual[0]     # Default color is first color in user defined colors.
             except:
@@ -312,8 +312,8 @@ def AddPickleToPlot (df, cycles, x1, y1, color_list, type, markersize, custom_co
                 plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize,c=color_list[i])  # s = size
         elif type == 'line':
             x_mask = np.isfinite(df_cycle_x[x1].astype(float))
-            y_mask = np.isfinite(df_cycle_x[y1].astype(float))
-            plt.plot(df_cycle_x[x1].astype(float)[x_mask], df_cycle_x[y1].astype(float)[y_mask], c=np.array(color_list[i]))
+            #y_mask = np.isfinite(df_cycle_x[y1].astype(float))
+            plt.plot(df_cycle_x[x1].astype(float)[x_mask], df_cycle_x[y1].astype(float)[x_mask], c=np.array(color_list[i]))
             #plt.plot(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), c=np.array(color_list[i]))
         else:
             print('Type variable might be wrong, plotting as scatter plot')
@@ -351,7 +351,7 @@ def set_next_pickle (nr, **kwargs):
     try:
         kwargs['color'+str(nr - 1)] = kwargs['color'+str(nr)]
     except:
-        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew' and kwargs['x1'] != 'charge_incr_spec' and kwargs['x1']!='discharge_incr_spec':
+        if kwargs['x1'] != 'cap_incr_spec' and kwargs['x1'] != 'Ew' and kwargs['x1'] != 'charge_incr_spec' and kwargs['x1']!='discharge_incr_spec' and kwargs['x1']!='potential_diff_cap' and kwargs['x1']!='cap_incr_spec_nonzero' and kwargs['x1']!='charge_incr_spec_nonzero' and kwargs['x1']!='discharge_incr_spec_nonzero':
             kwargs['color'+str(nr - 1)] = plt.get_cmap("tab10")(nr-1)
         else:
             kwargs['color'+str(nr - 1)] = None

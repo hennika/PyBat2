@@ -31,7 +31,7 @@ def vmp3 (data_url, cell_key, database):
     df, char_mass = id.import_biologic(data_url)     # use ID:import_biologic to import data and the characteristic mass from a biologic txt file.
 
     if 'Ns changes' in df.columns:  # This should be a cycling file
-        print ('Importing as VMP3 cycling file\n')
+        print ('Importing as VMP300 cycling file\n')
         df, char_mass = fix.vmp3_cycling(df, char_mass)
         df = add.specific_capacity_incremental(df, char_mass)
         df = add.specific_capacity_cycle(df, char_mass)
