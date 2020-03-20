@@ -14,6 +14,25 @@ from io import BytesIO            # For saving as TIFF
 ## Takes optional color scheme as input
 ## Returns vector of colors to be used in plot
 
+def adjust_color(color, amount=0.5):
+    """
+    Lightens the given color by multiplying (1-luminosity) by the given amount.
+    Input can be matplotlib color string, hex string, or RGB tuple.
+
+    Examples:
+    >> adjust_color('g', 0.3)
+    >> adjust_color('#F034A3', 0.6)
+    >> adjust_color((.3,.55,.1), 0.5)
+    """
+    import matplotlib.colors as mc
+    import colorsys
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], 1 - amount * (1 - c[1]), c[2])
+
 def get_colors(df, cycles=None, color=None, color_scheme=None):
 
     if not isinstance(df, pd.DataFrame):    # If df is not dataframe, assumes df is list
@@ -50,10 +69,25 @@ def get_colors(df, cycles=None, color=None, color_scheme=None):
         color_iter = 0  # If only one cycle is plotted, will not need to change color.
         color_nr = (color_min+color_max)/2      # Color is set to average of minimum and maximum.
 
-    for i in range(0, len(cycles)):
-        color_list.append(getattr(plt.cm, color_scheme)(color_nr))  # Setting color for given cycle
-        color_nr = color_nr + color_iter  # Next color or color gradient
-
+    try:
+        for i in range(0, len(cycles)):
+            color_list.append(getattr(plt.cm, color_scheme)(color_nr))  # Setting color for given cycle
+            color_nr = color_nr + color_iter  # Next color or color gradient
+    except:
+        print('Trying new color scheme')
+        color_min = 0.3
+        color_max = 1.3
+        color_nr = color_min
+        try:
+            color_iter = (
+                (color_max - color_min) / (
+                            len(cycles) - 1))  # If e.g. 3 cycles, want 0.5, 1, 1,5 so iteration is 0.5 from color_min
+        except:  # Need this exception to not divide by zero if plotting only one cycle.
+            color_iter = 0  # If only one cycle is plotted, will not need to change color.
+            color_nr = 1  # Color is set to original color.
+        for i in range(0, len(cycles)):
+            color_list.append(adjust_color(color_scheme, color_nr))
+            color_nr = color_nr + color_iter
     return color_list
 
 #-----------------------------------------------------------------------------------
