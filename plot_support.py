@@ -274,7 +274,8 @@ def add_legend(legend, colorlist, legend_loc=1):       # Legend guide: https://m
         return
     patches=[]
     for i in range(0, len(legend)):     # Iterates through each legend entry
-        patches.append(mpatches.Patch(color=colorlist[i], label=legend[i]))  #Sets legend color and text
+        if legend[i] != None:
+            patches.append(mpatches.Patch(color=colorlist[i], label=legend[i]))  #Sets legend color and text
     plt.legend(handles=patches, loc=legend_loc)     # Add all the specified legends to the plot.
     return
 #-----------------------------------------------------------------------------------
