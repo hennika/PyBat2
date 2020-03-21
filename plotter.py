@@ -11,15 +11,15 @@ import plot_support
 
 def plotter(**kwargs):
     x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks,type, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff = plot_support.set_plot_specs(**kwargs) # Sets specifications for plot
-    pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, **kwargs) # Sets specifications for first pickle
+    pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill = plot_support.set_pickle_specs(legend_color_list, **kwargs) # Sets specifications for first pickle
 
-    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, type, markersize, custom_code_first)       # Adds this pickle with specifications to plot
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, type, marker, markerfill, markersize, custom_code_first)       # Adds this pickle with specifications to plot
 
     for nr in range (2, 50):        # Does the same for rest of the wanted pickles (here up to 50).
         try:                        # Attempts to read next pickle. If found, will set specifications and add pickle to plot as above.
-            next_pickle_name, next_x, next_y, next_cycles, next_color, next_color_scheme = plot_support.set_next_pickle(nr, **kwargs)
-            pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=next_x, y1=next_y, color1=next_color, color_scheme1=next_color_scheme)
-            plot_support.AddPickleToPlot(df, cycles, next_x, next_y, color_list, type, markersize)
+            next_pickle_name, next_x, next_y, next_cycles, next_color, next_color_scheme, next_marker,next_markerfill = plot_support.set_next_pickle(nr, **kwargs)
+            pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=next_x, y1=next_y, color1=next_color, color_scheme1=next_color_scheme, marker1=next_marker, markerfill1=next_markerfill)
+            plot_support.AddPickleToPlot(df, cycles, next_x, next_y, color_list, type, marker, markerfill, markersize)
         except:
             continue # Script moves to next iteration, checking for yet another pickle.
 

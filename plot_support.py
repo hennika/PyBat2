@@ -227,8 +227,15 @@ def set_pickle_specs (legend_color_list, **kwargs):
         legend_color_list = color_list  # Sets color for legend to be each cycle that is plotted. Only one cell supported at the moment.
     else:
         legend_color_list.append(color_list[round(len(color_list) / 2)])  # Sets color for legend to be middle color if multiple cycles.
-
-    return (pickle_name, df, cycles, color, color_list, legend_color_list)
+    try:
+        marker = kwargs['marker1']
+    except:
+        marker = '.'
+    try:
+        markerfill = kwargs['markerfill1']
+    except:
+        markerfill = 1
+    return (pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill)
 
 #-----------------------------------------------------------------------------------
 def add_limits(xlim, ylim):  # Specifies x and y limits
@@ -299,7 +306,7 @@ def SavePlot(save_path_png, save_path_tiff): # Save high resolution by saving di
     return
 #-----------------------------------------------------------------------------------
 
-def AddPickleToPlot (df, cycles, x1, y1, color_list, type, markersize, custom_code_first=None):
+def AddPickleToPlot (df, cycles, x1, y1, color_list, type, marker, markerfill, markersize, custom_code_first=None):
 
     for i in range(0, len(cycles)):     # OBS: When plotting capacity vs cycle, it will only iterate once (different type of "cycle variable")
         df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]   # Make new data frame for given cycle
@@ -307,9 +314,15 @@ def AddPickleToPlot (df, cycles, x1, y1, color_list, type, markersize, custom_co
 
         if type == 'scatter':
             try:
-                plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize, c=np.array(color_list[i]))  # s = size
+                if markerfill != 1:
+                    plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), marker=marker,facecolors=markerfill, s=markersize, edgecolors=np.array(color_list[i]))  # s = size
+                else:
+                    plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), marker=marker, facecolors=markerfill, s=markersize, c=np.array(color_list[i]))  # s = size
             except:
-                plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize,c=color_list[i])  # s = size
+                if markerfill != 1:
+                    plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), marker=marker,facecolors=markerfill, s=markersize, edgecolors=color_list[i])  # s = size
+                else:
+                    plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float),marker=marker, facecolors=markerfill,s=markersize,c=color_list[i])  # s = size
         elif type == 'line':
             x_mask = np.isfinite(df_cycle_x[x1].astype(float))
             #y_mask = np.isfinite(df_cycle_x[y1].astype(float))
@@ -317,7 +330,7 @@ def AddPickleToPlot (df, cycles, x1, y1, color_list, type, markersize, custom_co
             #plt.plot(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), c=np.array(color_list[i]))
         else:
             print('Type variable might be wrong, plotting as scatter plot')
-            plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), s=markersize,
+            plt.scatter(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), marker=marker,facecolors=markerfill, s=markersize,
                         c=np.array(color_list[i]))  # s = size
     return
 
@@ -355,8 +368,16 @@ def set_next_pickle (nr, **kwargs):
             kwargs['color'+str(nr - 1)] = plt.get_cmap("tab10")(nr-1)
         else:
             kwargs['color'+str(nr - 1)] = None
+    try:
+        kwargs['marker'+str(nr - 1)] = kwargs['marker'+str(nr)]
+    except:
+        kwargs['marker'+str(nr - 1)] = '.'
+    try:
+        kwargs['markerfill'+str(nr - 1)] = kwargs['markerfill'+str(nr)]
+    except:
+        kwargs['markerfill'+str(nr - 1)] = 1
 
-    return (kwargs['pickle'+str(nr-1)],kwargs['x' + str(nr - 1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)])
+    return (kwargs['pickle'+str(nr-1)],kwargs['x' + str(nr - 1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)], kwargs['marker'+str(nr-1)], kwargs['markerfill'+str(nr-1)])
 
 #-----------------------------------------------------------------------------------
 def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path_png, save_path_tiff):

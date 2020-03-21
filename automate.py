@@ -224,16 +224,16 @@ def auto_plot (search_word, **kwargs):
         legend_use = cell_names
 
     x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, type, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
-    pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
-    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, type, markersize, custom_code_first)       # Adds this pickle with specifications to plot
+    pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, type, marker, markerfill, markersize, custom_code_first)       # Adds this pickle with specifications to plot
 
     for nr in range (2, len(cell_names)+1):
   #      try:
         next_pickle_response = cell_paths[nr-1]   # Looks up index in files given by the next cell in the response
         next_pickle_response_nr = 'pickle' + str(nr)
-        next_pickle_name,next_x, next_y, next_cycles, next_color, next_color_scheme = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
-        pickle_name, df, cycles, color, color_list, legend_color_list = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=next_x, y1=next_y, color1=next_color, color_scheme1=next_color_scheme)
-        plot_support.AddPickleToPlot(df, cycles, next_x, next_y, color_list, type, markersize)
+        next_pickle_name,next_x, next_y, next_cycles, next_color, next_color_scheme, next_marker, next_markerfill = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
+        pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=next_x, y1=next_y, color1=next_color, color_scheme1=next_color_scheme, marker1=next_marker, markerfill1=next_markerfill)
+        plot_support.AddPickleToPlot(df, cycles, next_x, next_y, color_list, type, marker, markerfill, markersize)
 #        except:
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
 
