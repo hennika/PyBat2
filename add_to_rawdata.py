@@ -259,20 +259,36 @@ def inverted_potential (df):
     return df
 
 def change_specific_capacity_incremental_no_OCV (df):
+    discharge_incr_spec_original = support.str_to_float(df['discharge_incr_spec'].tolist())  # Extracting incremental discharge as float
+    charge_incr_spec_original = support.str_to_float(df['charge_incr_spec'].tolist())  # Extracting incremental discharge as float
+    cap_incr_spec_original = support.str_to_float(df['cap_incr_spec'].tolist())  # Extracting incremental discharge as float
+    discharge_incr_spec_nonzero_original = support.str_to_float(df['discharge_incr_spec_nonzero'].tolist())  # Extracting incremental discharge as float
+    charge_incr_spec_nonzero_original = support.str_to_float(df['charge_incr_spec_nonzero'].tolist())  # Extracting incremental discharge as float
+    cap_incr_spec_nonzero_original = support.str_to_float(df['cap_incr_spec_nonzero'].tolist())  # Extracting incremental discharge as float
+
     discharge_incr_spec = []
     charge_incr_spec = []
     cap_incr_spec = []
+    discharge_incr_spec_nonzero = []
+    charge_incr_spec_nonzero  = []
+    cap_incr_spec_nonzero  = []
 
     for i in range(0, len(df['potential'])):
         if df['current'][i] == '0.000000000000000E+000':
             discharge_incr_spec.append('nan')
             charge_incr_spec.append('nan')
             cap_incr_spec.append('nan')
+            discharge_incr_spec_nonzero.append('nan')
+            charge_incr_spec_nonzero.append('nan')
+            cap_incr_spec_nonzero.append('nan')
         else:
-            discharge_incr_spec.append(df['discharge_incr_spec'][i])
-            charge_incr_spec.append(df['charge_incr_spec'][i])
-            cap_incr_spec.append(df['cap_incr_spec'][i])
+            discharge_incr_spec.append(discharge_incr_spec_original[i])
+            charge_incr_spec.append(charge_incr_spec_original[i])
+            cap_incr_spec.append(cap_incr_spec_original[i])
+            discharge_incr_spec_nonzero.append(discharge_incr_spec_nonzero_original[i])
+            charge_incr_spec_nonzero.append(charge_incr_spec_nonzero_original[i])
+            cap_incr_spec_nonzero.append(cap_incr_spec_nonzero_original[i])
 
-    df['discharge_incr_spec'], df['charge_incr_spec'], df['cap_incr_spec'] = discharge_incr_spec, charge_incr_spec, cap_incr_spec
+    df['discharge_incr_spec'], df['charge_incr_spec'], df['cap_incr_spec'],df['discharge_incr_spec_nonzero'], df['charge_incr_spec_nonzero'], df['cap_incr_spec_nonzero'] = discharge_incr_spec, charge_incr_spec, cap_incr_spec, discharge_incr_spec_nonzero, charge_incr_spec_nonzero, cap_incr_spec_nonzero
 
     return df

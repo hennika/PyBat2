@@ -74,7 +74,6 @@ def get_colors(df, cycles=None, color=None, color_scheme=None):
             color_list.append(getattr(plt.cm, color_scheme)(color_nr))  # Setting color for given cycle
             color_nr = color_nr + color_iter  # Next color or color gradient
     except:
-        print('Trying new color scheme')
         color_min = 0.3
         color_max = 1.3
         color_nr = color_min
