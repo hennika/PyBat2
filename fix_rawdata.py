@@ -4,8 +4,10 @@ import support
 
 def biologic(df, char_mass):
     # Deletes unnecessary columns:
-    del df['mode'], df['control changes'], df['Ns changes'], df['counter inc.'], df['Ns'], df['(Q-Qo)/mA.h'], df['control/V/mA'], df['Q charge/discharge/mA.h'], df['x'], df['control/V']  # Deletes row that we do not want.
-
+    try:
+        del df['mode'], df['control changes'], df['Ns changes'], df['counter inc.'], df['Ns'], df['(Q-Qo)/mA.h'], df['control/V/mA'], df['Q charge/discharge/mA.h'], df['x'], df['control/V']  # Deletes row that we do not want.
+    except:
+        print('No columns deleted (no big deal)')
     # Replaces the name of the colums with standard names:
     df = df.rename(
         columns={'ox/red': 'redox', 'time/s': 'time', 'dq/mA.h': 'dq', 'Ecell/V': 'potential', 'Ewe/V': 'potential',

@@ -230,7 +230,7 @@ def set_pickle_specs (legend_color_list, **kwargs):
     try:
         marker = kwargs['marker1']
     except:
-        marker = '.'
+        marker = 'o'
     try:
         markerfill = kwargs['markerfill1']
     except:
@@ -371,7 +371,7 @@ def set_next_pickle (nr, **kwargs):
     try:
         kwargs['marker'+str(nr - 1)] = kwargs['marker'+str(nr)]
     except:
-        kwargs['marker'+str(nr - 1)] = '.'
+        kwargs['marker'+str(nr - 1)] = 'o'
     try:
         kwargs['markerfill'+str(nr - 1)] = kwargs['markerfill'+str(nr)]
     except:
