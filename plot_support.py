@@ -102,6 +102,8 @@ def default_color_gradients (nr):
         8 : 'GnBu',
         9 : 'spring',
         10: 'cool',
+        11: 'viridis',
+        12: 'plasma'
     }[nr]
 #-----------------------------------------------------------------------------------
 def set_plot_specs(**kwargs):
@@ -235,7 +237,11 @@ def set_pickle_specs (legend_color_list, **kwargs):
         markerfill = kwargs['markerfill1']
     except:
         markerfill = 1
-    return (pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill)
+    try:
+        linestyle = kwargs['linestyle1']
+    except:
+        linestyle = '-'     # default linestyle is solid line
+    return (pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill, linestyle)
 
 #-----------------------------------------------------------------------------------
 def add_limits(xlim, ylim):  # Specifies x and y limits
@@ -306,7 +312,7 @@ def SavePlot(save_path_png, save_path_tiff): # Save high resolution by saving di
     return
 #-----------------------------------------------------------------------------------
 
-def AddPickleToPlot (df, cycles, x1, y1, color_list, type, marker, markerfill, markersize, custom_code_first=None):
+def AddPickleToPlot (df, cycles, x1, y1, color_list, type, marker, markerfill, markersize, linestyle, custom_code_first=None):
 
     for i in range(0, len(cycles)):     # OBS: When plotting capacity vs cycle, it will only iterate once (different type of "cycle variable")
         df_cycle_x = df[df['cycle'].astype(float) == cycles[i]]   # Make new data frame for given cycle
@@ -326,7 +332,7 @@ def AddPickleToPlot (df, cycles, x1, y1, color_list, type, marker, markerfill, m
         elif type == 'line':
             x_mask = np.isfinite(df_cycle_x[x1].astype(float))
             #y_mask = np.isfinite(df_cycle_x[y1].astype(float))
-            plt.plot(df_cycle_x[x1].astype(float)[x_mask], df_cycle_x[y1].astype(float)[x_mask], c=np.array(color_list[i]))
+            plt.plot(df_cycle_x[x1].astype(float)[x_mask], df_cycle_x[y1].astype(float)[x_mask], c=np.array(color_list[i]), linestyle=linestyle)
             #plt.plot(df_cycle_x[x1].astype(float), df_cycle_x[y1].astype(float), c=np.array(color_list[i]))
         else:
             print('Type variable might be wrong, plotting as scatter plot')
@@ -376,8 +382,12 @@ def set_next_pickle (nr, **kwargs):
         kwargs['markerfill'+str(nr - 1)] = kwargs['markerfill'+str(nr)]
     except:
         kwargs['markerfill'+str(nr - 1)] = 1
+    try:
+        kwargs['linestyle'+str(nr - 1)] = kwargs['linestyle'+str(nr)]
+    except:
+        kwargs['linestyle'+str(nr - 1)] = '-'
 
-    return (kwargs['pickle'+str(nr-1)],kwargs['x' + str(nr - 1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)], kwargs['marker'+str(nr-1)], kwargs['markerfill'+str(nr-1)])
+    return (kwargs['pickle'+str(nr-1)],kwargs['x' + str(nr - 1)],kwargs['y' + str(nr - 1)],kwargs['cycles'+str(nr-1)],  kwargs['color'+str(nr-1)], kwargs['color_scheme'+str(nr-1)], kwargs['marker'+str(nr-1)], kwargs['markerfill'+str(nr-1)], kwargs['linestyle'+str(nr-1)])
 
 #-----------------------------------------------------------------------------------
 def plot_plot(x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, legend_list, legend_color_list, legend_loc, custom_code, save_path_png, save_path_tiff):

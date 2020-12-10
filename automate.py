@@ -204,19 +204,28 @@ def auto_plot (search_word, **kwargs):
     cell_paths = []  # Initiates list for paths to cells to be plotted.
     finished = False    # Determines if user is finished with input
     while finished == False:
-        files = support.find_files(search_word, database)  # Finds and returns files as list
-        support.print_files_nr(files)  # prints files with nr
-        response = support.input_cool('yellow', 'Which of these cells do you want to plot? Write corresponding numbers, separated with "+" (Ex: 0+2+3):  ')
-        c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
-        for i in range (0, len(c_response)):  # Loop through all cells to plot.
-            cell_names.append((files[int(c_response[i])]).stem)  # Saves the cell name (.stem returns last path-element)
-            cell_paths.append(str(files[int(c_response[i])]))    # Saves the full path to the cell
 
-        response2 = support.input_cool('yellow', 'Search for more cells? (yes/any):   ')
-        if response2 == 'yes':
-            search_word = support.input_cool('yellow', 'Write new search word:   ')
-        else:
+        if isinstance(search_word, list):   # User should then have specified cells so that only one pickle  matches each instance in the list of plotted cells
+            support.print_cool('green', 'Assumes all cells are specified in search word list, skipping more searching')
+            for i in range(0, len(search_word)):
+                file = support.find_single_file(search_word[i], database)
+                cell_names.append(file.stem)
+                cell_paths.append(str(file))
             finished = True
+        else:
+            files = support.find_files(search_word, database)  # Finds and returns files as list
+            support.print_files_nr(files)  # prints files with nr
+            response = support.input_cool('yellow', 'Which of these cells do you want to plot? Write corresponding numbers, separated with "+" (Ex: 0+2+3):  ')
+            c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
+            for i in range (0, len(c_response)):  # Loop through all cells to plot.
+                cell_names.append((files[int(c_response[i])]).stem)  # Saves the cell name (.stem returns last path-element)
+                cell_paths.append(str(files[int(c_response[i])]))    # Saves the full path to the cell
+
+            response2 = support.input_cool('yellow', 'Search for more cells? (yes/any):   ')
+            if response2 == 'yes':
+                search_word = support.input_cool('yellow', 'Write new search word:   ')
+            else:
+                finished = True
 
     try:                # Checks legend and use cellnames if not found.
         legend_use = kwargs['legend']
@@ -224,16 +233,16 @@ def auto_plot (search_word, **kwargs):
         legend_use = cell_names
 
     x1, y1, xlabel, ylabel, xlim, ylim, xticks, yticks, type, markersize, legend_list, legend_loc, legend_color_list, custom_code, custom_code_first, save_path_png, save_path_tiff = plot_support.set_plot_specs(autolegend=legend_use, **kwargs)  # Sets specifications for plot
-    pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
-    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, type, marker, markerfill, markersize, custom_code_first)       # Adds this pickle with specifications to plot
+    pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill, linestyle = plot_support.set_pickle_specs(legend_color_list, pickle1=cell_paths[0], **kwargs)  # Sets specifications for first pickle
+    plot_support.AddPickleToPlot(df, cycles, x1, y1, color_list, type, marker, markerfill, markersize, linestyle, custom_code_first)       # Adds this pickle with specifications to plot
 
     for nr in range (2, len(cell_names)+1):
   #      try:
         next_pickle_response = cell_paths[nr-1]   # Looks up index in files given by the next cell in the response
         next_pickle_response_nr = 'pickle' + str(nr)
-        next_pickle_name,next_x, next_y, next_cycles, next_color, next_color_scheme, next_marker, next_markerfill = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
-        pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=next_x, y1=next_y, color1=next_color, color_scheme1=next_color_scheme, marker1=next_marker, markerfill1=next_markerfill)
-        plot_support.AddPickleToPlot(df, cycles, next_x, next_y, color_list, type, marker, markerfill, markersize)
+        next_pickle_name,next_x, next_y, next_cycles, next_color, next_color_scheme, next_marker, next_markerfill, next_linestyle = plot_support.set_next_pickle(nr, override=next_pickle_response, **kwargs)
+        pickle_name, df, cycles, color, color_list, legend_color_list, marker, markerfill, linestyle = plot_support.set_pickle_specs(legend_color_list, pickle1=next_pickle_name, cycles1=next_cycles, x1=next_x, y1=next_y, color1=next_color, color_scheme1=next_color_scheme, marker1=next_marker, markerfill1=next_markerfill, linestyle1=next_linestyle)
+        plot_support.AddPickleToPlot(df, cycles, next_x, next_y, color_list, type, marker, markerfill, markersize, linestyle)
 #        except:
  #           continue  # Script moves to next iteration, checking for yet another pickle. (should not be needed here)
 
@@ -453,3 +462,31 @@ def CCL (df):
             CCL.append(CCL[i-1]+CL[i])
     df['CL'], df['CCL'] = CL, CCL
     return df
+
+def add_columns_from_textfile (search_word_pickle, textfile_url, list_of_vars_to_import): # Add data to existing dataframe from textfile containing variable name as header in first row.
+
+    with open(textfile_url,'r') as file_input:
+        data = [] # initiates variable to contain variables as columns
+
+        for line in file_input:                             # Reads the data from the data_url line by line.
+            line = line.replace(",",".")  # Replaces "," with "." so that it is possible to convert the data from a string to a float.
+            line = line.rstrip()                            # Removes all kind of trailing characters. Eks: Whitespace and \n at the end of a line
+            data.append(line.split("\t"))
+        df_textfile = pd.DataFrame(data[1:],columns=data[0][0:(len(data[0]))])  # Creates the dataframe, with column names from first row.
+
+    database = user_setup.database
+    all_files = support.find_files(search_word_pickle, database)  # Finds and returns files as list
+    support.print_files_nr(all_files)  # prints files with nr
+
+    response = input("\n Which files do you want to add columns to? Write nr separated with + here:   ")  # Response from user
+    c_response = response.split('+')  # Splits string by plus sign and stores new strings in list
+    for i in range(0, len(c_response)):  # Loop through all cells to plot.
+        file = all_files[int(c_response[i])]
+        df_add = access_data.access_cell_as_string(file.stem)
+
+        for i in range(0, len(list_of_vars_to_import)):
+            df_add[list_of_vars_to_import[i]] = df_textfile[list_of_vars_to_import[i]]
+        df_add.to_pickle(database.as_posix() + "/" + file.stem)
+        support.print_cool('green', 'New column(s) added and saved')
+
+    return

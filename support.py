@@ -54,6 +54,17 @@ def find_files(search_word, location):
 
     return all_files
 
+def find_single_file(search_word, location):
+    all_files = []
+    for file in location.rglob('**/' + search_word + '*'):
+        all_files.append(file)  # Vector with the path of all files with corresponds with the search word.
+    if len(all_files)==1:
+        return all_files[0]
+    else:
+        error_message('Found more than one file! Specify more.')
+
+        return
+
 def save_figure(fig_handle, location):
 
     response = input("\n Would you like to save figure? (yes/no)  ")

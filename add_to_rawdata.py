@@ -127,6 +127,61 @@ def specific_capacity_cycle(df, char_mass):
 
     return df
 
+
+""" specific_energy_cycle does not work on Biologic, as energy_char variable is not analogous to charge_incr, as it is not zero during discharge but instead maintains the last value from the previous charge. Stupid.
+def specific_energy_cycle(df, char_mass):
+    cycle_incr_float = support.str_to_float(df['cycle'].tolist())  # Extracting incremental cycle number as float
+    discharge_incr_float = support.str_to_float(
+        df['energy_dis'].tolist())  # Extracting incremental discharge as float
+    charge_incr_float = support.str_to_float(df['energy_char'].tolist())  # Extracting incremental charge as float
+    current_incr_float = support.str_to_float(df['current'].tolist())   # Extracting incremental current as float.
+    # df = df.astype(float)  # Converts all dataframe values to float
+    last_cycle = int(cycle_incr_float[-1])  # Extracts last element of cycle column (last cycle nr) and converts to int.
+    cycles = list(range(last_cycle))  # Makes list of cycles, from 0 to last cycle nr.
+
+    discharge_spec = []  # Initiates variable
+    charge_spec = []  # Initiates variable
+    current_spec = []
+    for i in range(0, len(cycle_incr_float)):
+        if cycle_incr_float[i] == 0 and discharge_incr_float[i] == 0 and charge_incr_float[i] == 0:  # Ignores rest step.
+            continue
+        if i == len(
+                cycle_incr_float) - 1:  # If iteration has reached the second last row of df, add last value to charge and discharge.
+            if not (discharge_incr_float[-1] == 0):  # Adding only if not zero.
+                discharge_spec.append(discharge_incr_float[-1] / float(char_mass) * (-1000000))    # Times -1000000 to get Wh/kg and positive discharge
+            if not (charge_incr_float[-1] == 0):  # Adding only if not zero.
+                charge_spec.append(charge_incr_float[-1] / float(char_mass) * 1000000)
+            current_spec.append(current_incr_float[-1] / float(char_mass)*1000)
+            continue  # Iteration is finished, and should not go to if condition below.
+        if discharge_incr_float[i] != 0 and discharge_incr_float[i + 1] == 0:  # Finds where the discharge ends.
+            if discharge_incr_float[i] < discharge_incr_float[i-1]:     # Sometimes last value before changing to (dis)charge is transitioning to 0, use second last value instead.
+                discharge_spec.append(discharge_incr_float[i-1] / float(char_mass) * (-1000000))  # Adding specific discharge/gram
+                current_spec.append(current_incr_float[i-1] / float (char_mass)*1000)   # Adds current for discharge, assumes same on charge.
+            else:
+                discharge_spec.append(discharge_incr_float[i] / float(char_mass) * (-1000000))  # Adding specific discharge/gram
+                current_spec.append(current_incr_float[i] / float(char_mass) * 1000)  # Adds current for discharge, assumes same on charge.
+        if charge_incr_float[i] != 0 and charge_incr_float[i + 1] == 0:  # Finds where the charge ends.
+            if charge_incr_float[i] < charge_incr_float[i-1]:  # Sometimes last value before changing to (dis)charge is transitioning to 0, use second last value instead.
+                charge_spec.append(charge_incr_float[i-1] / float(char_mass) * 1000000)  # Adding specific charge/gram
+            else:
+                charge_spec.append(charge_incr_float[i] / float(char_mass) * 1000000)  # Adding specific charge/gram
+
+    discharge_spec, charge_spec, cycles, current_spec = support.remove_last(discharge_spec, charge_spec, cycles, current_spec,
+                                                              target=min(len(discharge_spec), len(charge_spec),
+                                                                                len(cycles)))
+
+    if (len(discharge_spec) != len(charge_spec) or len(discharge_spec) != len(cycles)):
+        sys.exit("Error: Unequal lengths of energy_dis_spec/energy_char_spec/cycle_nr!")
+
+    discharge_spec, charge_spec, cycles, current_spec = support.fill_none(discharge_spec, charge_spec, cycles, current_spec, target=len(
+        cycle_incr_float))  # Fill rest of column with 'None'
+
+    df['energy_dis_spec'], df['energy_char_spec'] = [discharge_spec, charge_spec]  # Add them as new columns.
+
+    return df
+    """
+
+
 # ------------------------
 
 # Takes in dataframe and add differential capacity as new column.
@@ -273,7 +328,7 @@ def change_specific_capacity_incremental_no_OCV (df):
     charge_incr_spec_nonzero  = []
     cap_incr_spec_nonzero  = []
 
-    for i in range(0, len(df['potential'])):
+    for i in range(0, len(df['discharge_incr_spec'])):
         if df['current'][i] == '0.000000000000000E+000':
             discharge_incr_spec.append('nan')
             charge_incr_spec.append('nan')

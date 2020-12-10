@@ -34,7 +34,9 @@ def vmp3 (data_url, cell_key, database):
         print ('Importing as VMP300 cycling file\n')
         df, char_mass = fix.vmp3_cycling(df, char_mass)
         df = add.specific_capacity_incremental(df, char_mass)
+        df = add.change_specific_capacity_incremental_no_OCV(df)
         df = add.specific_capacity_cycle(df, char_mass)
+        #df = add.specific_energy_cycle(df, char_mass) # does not work because Biologic is inconsistent.
         df = add.inverted_potential(df)
     elif 'Re(Z)/Ohm' in df.columns:
         print('Importing as VMP3 impedance file, specific capacity and cycles not added.\n')
